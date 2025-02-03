@@ -238,8 +238,8 @@ diff -Nru ../orig/qemu-9.2.0/system/vl.c ./system/vl.c
                  break;
              case QEMU_OPTION_m:
 diff -Nru ../orig/qemu-9.2.0/target/i386/whpx/whpx-all.c ./target/i386/whpx/whpx-all.c
---- ../orig/qemu-9.2.0/target/i386/whpx/whpx-all.c	2024-12-10 18:46:37.000000000 -0500
-+++ ./target/i386/whpx/whpx-all.c	2025-02-01 07:19:02.285454800 -0500
+--- ../orig/qemu-9.2.0/target/i386/whpx/whpx-all.c	2024-12-10 18:46:37
++++ ./target/i386/whpx/whpx-all.c	2025-02-03 10:48:26
 @@ -10,6 +10,7 @@
  
  #include "qemu/osdep.h"
@@ -258,7 +258,7 @@ diff -Nru ../orig/qemu-9.2.0/target/i386/whpx/whpx-all.c ./target/i386/whpx/whpx
  
      if (!memory_region_is_ram(mr)) {
 -        return;
-+            memory_region_is_rom(mr) || is_romd, mr->name);
++        if (memory_region_is_romd(mr)) {            
 +            is_romd = true;
 +            warn_report("WHPX: ROMD region 0x%016" PRIx64 "->0x%016" PRIx64,
 +                        start_pa, start_pa + size);
@@ -310,8 +310,6 @@ diff -Nru ../orig/qemu-9.2.0/target/i386/whpx/whpx-all.c ./target/i386/whpx/whpx
  }
  
  static void whpx_region_add(MemoryListener *listener,
-                            MemoryRegionSection *section)
- {
 diff -Nru ../orig/qemu-9.2.0/ui/console.c ./ui/console.c
 --- ../orig/qemu-9.2.0/ui/console.c
 +++ ./ui/console.c

@@ -238,20 +238,44 @@ diff -Nru ../orig/qemu-9.2.0/system/vl.c ./system/vl.c
                  break;
              case QEMU_OPTION_m:
 diff -Nru ../orig/qemu-9.2.0/target/i386/whpx/whpx-all.c ./target/i386/whpx/whpx-all.c
---- ../orig/qemu-9.2.0/target/i386/whpx/whpx-all.c
-+++ ./target/i386/whpx/whpx-all.c
+--- ../orig/qemu-9.2.0/target/i386/whpx/whpx-all.c	2024-12-10 18:46:37
++++ ./target/i386/whpx/whpx-all.c	2025-02-03 10:48:26
 @@ -10,6 +10,7 @@
-
+ 
  #include "qemu/osdep.h"
  #include "cpu.h"
 +#include "exec/ram_addr.h"
  #include "exec/address-spaces.h"
  #include "exec/ioport.h"
  #include "gdbstub/helpers.h"
-@@ -2365,6 +2366,39 @@
-                         memory_region_is_rom(mr), mr->name);
- }
-
+@@ -2339,11 +2340,18 @@
+     MemoryRegion *mr = section->mr;
+     hwaddr start_pa = section->offset_within_address_space;
+     ram_addr_t size = int128_get64(section->size);
++    bool is_romd = false;
+     unsigned int delta;
+     uint64_t host_va;
+ 
+     if (!memory_region_is_ram(mr)) {
+-        return;
++        if (memory_region_is_romd(mr)) {            
++            is_romd = true;
++            warn_report("WHPX: ROMD region 0x%016" PRIx64 "->0x%016" PRIx64,
++                        start_pa, start_pa + size);
++        } else {
++            return;
++        }
+     }
+ 
+     delta = qemu_real_host_page_size() - (start_pa & ~qemu_real_host_page_mask());
+@@ -2362,7 +2370,40 @@
+             + section->offset_within_region + delta;
+ 
+     whpx_update_mapping(start_pa, size, (void *)(uintptr_t)host_va, add,
+-                        memory_region_is_rom(mr), mr->name);
++                        memory_region_is_rom(mr) || is_romd, mr->name);
++}
++
 +void whpx_update_guest_pa_range(uint64_t start_pa, uint64_t size, void *host_va, int readonly, int add)
 +{
 +    MemoryRegion mr;
@@ -283,11 +307,9 @@ diff -Nru ../orig/qemu-9.2.0/target/i386/whpx/whpx-all.c ./target/i386/whpx/whpx
 +
 +    whpx_process_section(&section, add);
 +    object_unref(OBJECT(&mr));
-+}
-+
+ }
+ 
  static void whpx_region_add(MemoryListener *listener,
-                            MemoryRegionSection *section)
- {
 diff -Nru ../orig/qemu-9.2.0/ui/console.c ./ui/console.c
 --- ../orig/qemu-9.2.0/ui/console.c
 +++ ./ui/console.c

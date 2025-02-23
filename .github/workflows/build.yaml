@@ -13,7 +13,7 @@ jobs:
    
      runs-on: windows-2019       
      env:
-      pkgver: '9.2.0'
+      pkgver: '9.2.1'
       patch:  '00-qemu92x-mesa-glide.patch'
       mspkg: 'mingw-w64-x86_64'
       
@@ -168,6 +168,7 @@ jobs:
         Version ${{ env.pkgver }}
         Built using ${MSYSTEM} 
         EOF
+        unix2dos version.txt build-timestamp.txt
         echo "Finished build at $(date)"
 
      - name: Uploading build
@@ -180,7 +181,7 @@ jobs:
 
     runs-on: windows-2019
     env:
-     pkgver: '9.2.0'
+     pkgver: '9.2.1'
      patch:  '00-qemu92x-mesa-glide.patch'
      mspkg: 'mingw-w64-ucrt-x86_64'
 
@@ -335,6 +336,7 @@ jobs:
         Version ${{ env.pkgver }}
         Built using ${MSYSTEM} 
         EOF
+        unix2dos version.txt build-timestamp.txt 
         echo "Finished build at $(date)"
 
     - name: Uploading build

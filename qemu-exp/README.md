@@ -19,12 +19,13 @@ The content is inside this folder or already released in this repository.
 - GUI frontend using QtEmu or EmuGUI
 
 ## Deprecated Content
-- `buildiso.sh` Shell Script
+- N/A
 
 ## Cancelled/Removed Content
 - Hypervisor support for Windows 8.1 and people not using Hyper-V with [**GVM support**](https://github.com/qemu-gvm/qemu-gvm)
 - Game controllers support with [**QEMU USB Gamepad**](https://www.reddit.com/r/VFIO/comments/878ymp/gamepad_support_in_qemu/?rdt=42637) (Linux Only)
 - Compiling wine support for QEMU-3dfx
+- `buildiso.sh` Shell Script
 
 # Note
 Im not responsible if something happens to your computer from having program errors to bricking your system.

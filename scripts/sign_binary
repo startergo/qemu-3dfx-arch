@@ -49,19 +49,27 @@ if [[ $platform == 'wrappers' ]]; then
 cat <<EOF > commit\ id.txt
 QEMU-3dfx-arch VMAddons ISO
 =================================================
-Commit $(git rev-parse HEAD)
+Commit $(git rev-parse --short=7 HEAD)
 
 refer to readme.txt for more information
 EOF
 echo "Signed commit id.txt"
 fi
 ## Signing binaries
+# Windows
 if [[ $platform == 'windows' ]]; then
+   if [ -f ./qemu-system-i386.exe ]; 
+   then echo 'QEMU found!'
+   else
+      echo "qemu-system-i386.exe not found!"
+      exit 1
+   fi
+QEMUVERSION=$(./qemu-system-i386.exe --version | head -n 1 | grep -oP '(?<=version )\d+\.\d+\.\d+')
 cat <<EOF > build-timestamp.txt 
 Built on $(date +"%H:%M:%S %B %d %Y") 
-  $(pacman -Q binutils) 
+  $(pacman -Q ${MINGW_PACKAGE_PREFIX}-binutils)
+  $(pacman -Q ${MINGW_PACKAGE_PREFIX}-gcc)
   $(pacman -Q git) 
-  $(pacman -Q gcc)
 EOF
 echo "Signed build-timestamp.txt"
 
@@ -69,13 +77,21 @@ echo "Signed build-timestamp.txt"
 cat <<EOF > version.txt
 QEMU-3dfx-arch (Windows build)
 =================================================
-Version $(git describe --tags)
+Version $(echo $QEMUVERSION.r$(git rev-list --count HEAD).$(git rev-parse --short=7 HEAD))
 Built using ${MSYSTEM}
 EOF
 echo "Signed version.txt"
 exit 0
 
+# Arch Linux
 elif [[ $platform == 'arch' ]]; then
+   if [ -f ./qemu-system-i386 ]; 
+   then echo 'QEMU found!'
+   else
+      echo "qemu-system-i386 not found!"
+      exit 1
+   fi
+QEMUVERSION=$(./qemu-system-i386 --version | head -n 1 | grep -oP '(?<=version )\d+\.\d+\.\d+')
 cat <<EOF > build-timestamp.txt 
 Built on $(date +"%H:%M:%S %B %d %Y") 
   $(pacman -Q binutils) 
@@ -88,7 +104,7 @@ echo "Signed build-timestamp.txt"
 cat <<EOF > version.txt
 QEMU-3dfx-arch (Arch Linux build)
 =================================================
-Version $(git describe --tags)
+Version $(echo $QEMUVERSION.r$(git rev-list --count HEAD).$(git rev-parse --short=7 HEAD))
 Built using GCC $(gcc --version | head -n 1 | cut -d '' -f 3)
 EOF
 echo "Signed version.txt"

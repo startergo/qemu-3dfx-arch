@@ -79,7 +79,7 @@ Simple guide to apply the patch:<br>
     $ patch -p0 -i ../00-qemu92x-mesa-glide.patch
     $ bash ../scripts/sign_commit
     $ mkdir ../build && cd ../build
-    $ ../qemu-9.2.0/configure --target-list=i386-softmmu --prefix=$(pwd)/install_dir
+    $ ../qemu-9.2.0/configure --target-list=i386-softmmu --prefix=$(pwd)/../install_dir
     $ make install 
 
 - This guide makes and installs binaries to install_dir

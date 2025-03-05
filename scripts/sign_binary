@@ -46,14 +46,14 @@ fi
 
 ## Signing iso
 if [[ $platform == 'wrappers' ]]; then
-cat <<EOF > commit\ id.txt
+cat <<EOF > commit.txt
 QEMU-3dfx-arch VMAddons ISO
 =================================================
 Commit $(git rev-parse --short=7 HEAD)
 
 refer to readme.txt for more information
 EOF
-echo "Signed commit id.txt"
+echo "Signed commit.txt"
 fi
 ## Signing binaries
 # Windows

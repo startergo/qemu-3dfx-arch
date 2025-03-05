@@ -104,7 +104,7 @@ filesdef=(
     "libzstd.dll"
     "nss3.dll"
     "nssutil3.dll"
-    "rav1e.dll"
+    "librav1e.dll"
     "SDL2.dll"
     "SDL2_image.dll"
     "zlib1.dll"

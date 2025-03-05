@@ -27,20 +27,22 @@ md5sums=(
   'SKIP'
 )
 
+pkgver() {
+    cd "$srcdir"/"$_pkgname"
+    echo r$(git rev-list --count HEAD).$(git rev-parse --short=7 HEAD)
+}
+
 build() {
   cd "$srcdir/$_pkgname/openglide"
   bash ./bootstrap
   rm -rf ../build && mkdir ../build && cd ../build
   ../openglide/configure --disable-sdl --prefix=/usr
   make
-  libtool --finish /usr/lib
-
 }
 
 package() {
   cd "$srcdir/$_pkgname/build"
   make DESTDIR="$pkgdir/" install
-  libtool --finish "$pkgdir"/usr/lib
   install -Dm755 "$srcdir"/q3dlog.sh "$pkgdir"/usr/bin/q3dlog
   install -Dm644 "$srcdir/$_pkgname/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

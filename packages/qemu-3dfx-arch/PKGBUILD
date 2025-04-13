@@ -6,7 +6,7 @@
 _pkgname=qemu-3dfx
 pkgname="$_pkgname"-arch
 _qemuver=9.2.2
-pkgver=v9.2.2.r531.b774e64
+pkgver=v9.2.2.r532.56fd109
 pkgrel=1
 pkgdesc="MESA GL/3Dfx Glide pass-through for QEMU (Forked repository)"
 arch=("x86_64")
@@ -167,7 +167,7 @@ build() {
     cp ../texts/readme.txt readme.txt
     cp ../../LICENSE license.txt
     bash ../../scripts/sign_binary
-    unix2dos commit\ id.txt license.txt readme.txt autorun.inf open.bat wrapgl/icd/readme.txt
+    unix2dos commit.txt license.txt readme.txt autorun.inf open.bat wrapgl/icd/{readme.txt,icd-enable.reg}
     mkisofs -JR -V "VMWRAPPER-$(git log --format="%h" -n 1)" -o ../wrappers.iso ../iso
 }
 

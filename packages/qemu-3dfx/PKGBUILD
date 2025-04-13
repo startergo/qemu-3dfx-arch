@@ -164,8 +164,8 @@ build() {
     cp -rf ../3dfx/build/*.{vxd,sys,dll,dxe,ovl,exe} ./wrapfx/
     cp -rf ../mesa/build/*.{dll,exe} ./wrapgl/
     cp ../../LICENSE license.txt
-    echo ${pkgver} > commit\ id.txt
-    unix2dos commit\ id.txt license.txt
+    echo ${pkgver} > commit.txt
+    unix2dos commit.txt license.txt
     mkisofs -JR -V "VMWRAPPER-$(git log --format="%h" -n 1)" -o ../wrappers.iso ../iso
 }
 

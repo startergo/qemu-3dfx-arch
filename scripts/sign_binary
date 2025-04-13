@@ -49,7 +49,7 @@ if [[ $platform == 'wrappers' ]]; then
 cat <<EOF > commit.txt
 QEMU-3dfx-arch VMAddons ISO
 =================================================
-Commit $(git rev-parse --short=7 HEAD)
+Commit r$(git rev-list --count HEAD).$(git rev-parse --short=7 HEAD)
 
 refer to readme.txt for more information
 EOF

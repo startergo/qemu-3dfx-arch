@@ -1,12 +1,12 @@
 # Courtesy from kharovtobi <https://github.com/kharovtobi>
 # Most of the repository source code is not my work! it belongs to kjliew at https://github.com/kjliew/qemu-3dfx (pls support him)
 # Do not post this into AUR!
-# The PKGBUILD is dependent on My repository and uses my patch.
+# The PKGBUILD is dependent on My repository and uses my patch (was for now).
 
 _pkgname=qemu-3dfx
 pkgname="$_pkgname"-arch
-_qemuver=9.2.2
-pkgver=v9.2.2.r532.56fd109
+_qemuver=9.2.3
+pkgver=v9.2.3.r534.c305da5
 pkgrel=1
 pkgdesc="MESA GL/3Dfx Glide pass-through for QEMU (Forked repository)"
 arch=("x86_64")

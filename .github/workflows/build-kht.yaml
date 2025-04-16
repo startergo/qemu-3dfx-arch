@@ -1,4 +1,4 @@
-# Default (for kharovtobi's patches) YAML
+# Default (for kharovtobi's patches)(not supported) YAML
 # Line wrap recommended
 # Don't forget to change variables every QEMU update!
 name: Build Stable branch (local)

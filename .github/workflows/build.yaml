@@ -13,7 +13,7 @@ jobs:
    
      runs-on: windows-2019       
      env:
-      pkgver: '9.2.2'
+      pkgver: '9.2.3'
       patch:  '00-qemu92x-mesa-glide.patch'
       mspkg: 'mingw-w64-x86_64'
       
@@ -181,7 +181,7 @@ jobs:
 
     runs-on: windows-2019
     env:
-     pkgver: '9.2.2'
+     pkgver: '9.2.3'
      patch:  '00-qemu92x-mesa-glide.patch'
      mspkg: 'mingw-w64-ucrt-x86_64'
 
@@ -422,18 +422,15 @@ jobs:
       run: |
        echo "Making Wrapper Disk"
        mkdir -p wrapgl/icd wrapfx g2xwrap
-       cp -r ../3dfx/build/* ./wrapfx/
-       rm -rf ./wrapfx/lib* ./wrapfx/*.o ./wrapfx/*.def ./wrapfx/*.c ./wrapfx/Makefile
-       cp -r ../mesa/build/* ./wrapgl/
-       rm -rf ./wrapgl/Makefile
-       cp -rv ../extra/g2xwrap/*.dll g2xwrap/
+       cp -rf ../3dfx/build/*.{vxd,sys,dll,dxe,ovl,exe} ./wrapfx/
+       cp -rf ../mesa/build/*.{dll,exe} ./wrapgl/
+       cp -rf ../extra/g2xwrap/*.dll g2xwrap/
        bash ../../scripts/sign_binary
        cp ../texts/readme.txt readme.txt
        cp ../../LICENSE license.txt
-       cp ../texts/icd-enable.reg wrapgl/icd/icd-enable.reg
-       cp ../texts/readme_icd.txt wrapgl/icd/readme.txt
+       cp -rf ../texts/{readme.txt,icd-enable.reg} wrapgl/icd
        mv wrapgl/qmfxgl32.dll wrapgl/icd/qmfxgl32.dll
-       unix2dos autorun.inf open.bat readme.txt wrapgl/icd/readme.txt commit.txt license.txt
+       unix2dos commit.txt license.txt readme.txt autorun.inf open.bat wrapgl/icd/{readme.txt,icd-enable.reg}
        cd ..
        xorriso -as mkisofs -JR -V "VMWRAPPER-$(git log --format="%h" -n 1)" -o wrappers.iso iso
        echo "Finished build at $(date)"

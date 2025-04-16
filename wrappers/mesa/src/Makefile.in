@@ -62,7 +62,7 @@ $(TARGETICD): $(C_OBJS) szdata.o wrapgl32_icd.o icddrv.o stamp.o
 
 $(TOOLSTS):
 	@rm -f ../wgltest/wgltest.{.exe,.res}
-	@make -C ../wgltest OUTDIR=$(OUTDIR)
+	@make -C ../wgltest OUTDIR=$(OUTDIR) CROSS=$(CROSS)
 
 $(TOOLSGL):
 	@echo "  LD  $@"

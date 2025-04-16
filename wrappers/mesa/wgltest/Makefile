@@ -1,6 +1,6 @@
 QEMU_SRC_DIR=../../../qemu-1
 FXLIB=../../fxlib
-CROSS=i686-w64-mingw32-
+CROSS?=
 CC=$(CROSS)gcc
 RC=$(CROSS)windres
 STRIP=strip
@@ -24,6 +24,9 @@ wgltest.exe: wgltest.c wgltest.res
 	@$(CC) $(CFLAGS) -s -o $@ wgltest.c wgltest.res $(LDFLAGS) -lgdi32 -lopengl32
 	@if [ -d ../$(OUTDIR) ]; then cp -v wgltest.exe ../$(OUTDIR); fi
 
-distclean:
-	@rm -f wgltest.exe
+clean:
 	@rm -f wgltest.res
+
+distclean: clean
+	@rm -f wgltest.exe
+

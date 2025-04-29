@@ -87,7 +87,7 @@ filesdef=(
     "libssh2-1.dll"
     "libssl-3-x64.dll"
     "libstdc++-6.dll"
-    "libSvtAv1Enc-2.dll"
+    "libSvtAv1Enc-3.dll"
     "libsystre-0.dll"
     "libtasn1-6.dll"
     "libthai-0.dll"

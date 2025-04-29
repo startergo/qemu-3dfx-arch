@@ -5,7 +5,7 @@
 
 _pkgname=qemu-3dfx
 pkgname="$_pkgname"-arch
-_qemuver=9.2.3
+_qemuver=10.0.0
 pkgver=v9.2.3.r534.c305da5
 pkgrel=1
 pkgdesc="MESA GL/3Dfx Glide pass-through for QEMU (Forked repository)"
@@ -126,8 +126,7 @@ prepare() {
     rsync -r ../qemu-0/hw/3dfx ../qemu-1/hw/mesa ./hw/
 
     # Change patch per major release (uses kjliew)
-    #patch -p0 -i  ../00-qemu92x-mesa-glide.kht.patch
-    patch -p0 -i  ../00-qemu92x-mesa-glide.patch
+    patch -p0 -i  ../00-qemu100x-mesa-glide.patch
 
     bash ../scripts/sign_commit
     rm -rf "$srcdir"/"$_pkgname"/build

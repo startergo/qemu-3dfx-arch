@@ -15,10 +15,8 @@ wrappers/mesa/build
 install/
 install_dir/
 openglide-3dfx/src/openglide
-wrappers-artifact
 build-timestamp.txt
 version.txt
-
 *.log
 *.part
 *.sig
@@ -30,15 +28,13 @@ packages/qemu-3dfx/qemu-3dfx
 packages/openglide-3dfx/openglide
 
 # Ignore versions of qemu src
-qemu-11*
-qemu-10*
 qemu-9*
 qemu-8*
 qemu-7*
 qemu-6*
 
 # Wrappers & ISO folders 
-wrappers/iso/commit.txt
+wrappers/iso/commit\ id.txt
 wrappers/iso/readme.txt
 wrappers/iso/license.txt
 wrappers/iso/g2xwrap

@@ -37,7 +37,7 @@ const char dllname[] = "/opt/X11/lib/libGL.dylib";
 int MGLUpdateGuestBufo(mapbufo_t *bufo, int add) { return 0; }
 #endif
 #ifdef CONFIG_LINUX
-#include "system/kvm.h"
+#include "sysemu/kvm.h"
 
 int MGLUpdateGuestBufo(mapbufo_t *bufo, int add)
 {

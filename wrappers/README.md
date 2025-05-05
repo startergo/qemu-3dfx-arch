@@ -46,20 +46,22 @@ refer to [qemu-xtra Readme](https://github.com/kharovtobi/qemu-xtra/blob/master/
 
 **Packaging**
 
-This instruction are based in Arch Linux btw, in Bash Shell. Its simple because of different Linux distributions or your using Windows.
+This instructions are based in Arch Linux btw, in Bash Shell. Its simple because of different Linux distributions or your using Windows.
 
     $ cd ~/myqemu/qemu-3dfx/wrappers/iso
     $ mkdir wrapfx && cd wrapfx
-    $ cp -r ../../3dfx/build/*.{vxd,sys,dll,dxe,ovl,exe} ./
+    $ cp -r ../../3dfx/build/* ./
+    $ rm -r lib* Makefile     
 
     $ cd ~/myqemu/qemu-3dfx/wrappers/iso
     $ mkdir wrapgl && cd wrapgl
-    $ cp -r ../../mesa/build/*.{dll,exe} ./
+    $ cp -r ../../mesa/build/* ./
+    $ rm Makefile
     
     $ cd ~/myqemu/qemu-3dfx/wrappers/iso
     $ cp ../texts/readme.txt ./readme.txt
-    $ bash ../../scripts/sign_binary
-    $ unix2dos readme.txt commit.txt 
+    $ echo $(git rev-parse HEAD) > ./commit\ id.txt
+    $ unix2dos readme.txt commit\ id.txt 
     $ cd ..
     $ mkisofs -o wrappers.iso ./iso
     

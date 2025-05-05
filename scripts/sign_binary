@@ -1,5 +1,5 @@
 #!/bin/sh
-# This script is used to sign the binary with the build timestamp and version
+# sign binary script
 
 platform='unknown'
 unamestr=$(uname -o)
@@ -9,7 +9,7 @@ if [ -f "$(pwd)/qemu.ico" ] || [ -f "$(pwd)/open.bat" ] || [ -f "$(pwd)/autorun.
    platform='wrappers'
    echo "Wrappers found!"
 # Check the right platform   
-elif [[ "$unamestr" == 'GNU/Linux' ]]; then
+elif [[ "$unamestr" = 'GNU/Linux' ]]; then
    if [ -f /etc/arch-release ]; then
       platform='arch'
       echo "Arch Linux"
@@ -25,9 +25,9 @@ elif [[ "$unamestr" == 'GNU/Linux' ]]; then
       echo "Unknown Linux distribution or not supported"
       exit 1
    fi
-   echo Linux
-elif [[ "$unamestr" == 'Msys' ]]; then
-   if ! command -v pacman 2>&1 >/dev/null
+   echo "Linux"
+elif [ "$unamestr" = 'Msys' ]; then
+   if ! command -v pacman >/dev/null 2>&1
    then
       echo "pacman not found! Are you are running in Git Bash?"
       exit 1
@@ -35,7 +35,7 @@ elif [[ "$unamestr" == 'Msys' ]]; then
       platform='windows'
       echo "Windows"
    fi
-elif [[ "$unamestr" == 'Darwin' ]]; then
+elif [[ "$unamestr" = 'Darwin' ]]; then
    platform='mac'
    echo "MacOS not supported yet..."
    exit 1
@@ -45,7 +45,7 @@ else
 fi
 
 ## Signing iso
-if [[ $platform == 'wrappers' ]]; then
+if [[ $platform = 'wrappers' ]]; then
 cat <<EOF > commit.txt
 QEMU-3dfx-arch VMAddons ISO
 =================================================
@@ -78,6 +78,7 @@ cat <<EOF > version.txt
 QEMU-3dfx-arch (Windows build)
 =================================================
 Version $(echo $QEMUVERSION.r$(git rev-list --count HEAD).$(git rev-parse --short=7 HEAD))
+$(git rev-parse --abbrev-ref HEAD) Branch
 Built using ${MSYSTEM}
 EOF
 echo "Signed version.txt"
@@ -105,6 +106,7 @@ cat <<EOF > version.txt
 QEMU-3dfx-arch (Arch Linux build)
 =================================================
 Version $(echo $QEMUVERSION.r$(git rev-list --count HEAD).$(git rev-parse --short=7 HEAD))
+$(git rev-parse --abbrev-ref HEAD) Branch
 Built using GCC $(gcc --version | head -n 1 | cut -d '' -f 3)
 EOF
 echo "Signed version.txt"

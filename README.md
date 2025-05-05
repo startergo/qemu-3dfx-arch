@@ -19,8 +19,9 @@ This repository includes patches from upstream and my patches that work on lates
 
 **My patches**
 
-    00-qemu92x-mesa-glide.kht.patch - Patch for QEMU version 9.2.x (MESA & Glide) (deprecated)
-    01-qemu91x-mesa-glide.patch - Patch for QEMU version 9.1.x (MESA & Glide)
+     00-qemu100x-mesa-glide.patch - Patch for QEMU version 10.0.x (MESA & Glide)
+     01-qemu92x-mesa-glide.kht.patch - Patch for QEMU version 9.2.x (MESA & Glide) (deprecated)
+     02-qemu91x-mesa-glide.patch - Patch for QEMU version 9.1.x (MESA & Glide)
 
 **KJ Liew's patches**
 
@@ -71,7 +72,7 @@ Simple guide to apply the patch:<br>
 
     $ mkdir ~/myqemu && cd ~/myqemu
     $ git clone https://github.com/kharovtobi/qemu-3dfx-arch.git
-    $ cd qemu-3dfx
+    $ cd qemu-3dfx-arch
     $ wget https://download.qemu.org/qemu-9.2.3.tar.xz
     $ tar xf qemu-9.2.3.tar.xz
     $ cd qemu-9.2.3

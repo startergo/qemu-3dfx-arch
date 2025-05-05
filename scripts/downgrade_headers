@@ -1,0 +1,23 @@
+#!/bin/sh
+# downgrade system headers (some people wanted qemu below hehe)
+
+TOP=.
+VER=$(cat VERSION)
+if [ "$(printf '%s\n' "$VER" "10.0.0" | sort -V | head -n 1)" = "$VER" ] && [ "$VER" != "10.0.0" ]; then
+echo "Downgrading system headers to version $VER"
+
+SRC=" \
+    $TOP/hw/3dfx/glidewnd.c \
+    $TOP/hw/mesa/mglcntx_linux.c \
+    $TOP/hw/mesa/mglcntx_mingw.c \
+    $TOP/hw/mesa/mglcntx_sdlgl.c \
+" \
+
+sed -i -e 's/system/sysemu/g' $SRC
+grep "sysemu" $SRC
+exit 0
+else 
+echo "Version is too high for downgrade $VER"
+exit 1
+fi
+

@@ -13,9 +13,10 @@ jobs:
    
      runs-on: windows-2019       
      env:
-      pkgver: '9.2.3'
+      pkgver: '10.0.0'
       patch:  '00-qemu92x-mesa-glide.patch'
       mspkg: 'mingw-w64-x86_64'
+      branch: ${{ github.ref_name }}
       
      steps:  
      - name: Checkout repo
@@ -165,6 +166,7 @@ jobs:
         QEMU-3dfx-arch (Windows Build)
         =================================================
         GitHub Actions Artifact Build
+        ${{ env.branch }} Branch
         Version ${{ env.pkgver }}
         Built using ${MSYSTEM} 
         EOF
@@ -181,9 +183,10 @@ jobs:
 
     runs-on: windows-2019
     env:
-     pkgver: '9.2.3'
+     pkgver: '10.0.0'
      patch:  '00-qemu92x-mesa-glide.patch'
      mspkg: 'mingw-w64-ucrt-x86_64'
+     branch: ${{ github.ref_name }}
 
     steps:
     - name: Checkout repo
@@ -333,6 +336,7 @@ jobs:
         QEMU-3dfx-arch (Windows Build)
         =================================================
         GitHub Actions Artifact Build
+        ${{ env.branch }} Branch
         Version ${{ env.pkgver }}
         Built using ${MSYSTEM} 
         EOF

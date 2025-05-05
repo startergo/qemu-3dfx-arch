@@ -1,6 +1,8 @@
 # Experimental patches folder
 This folder is where i put the patches that are meant to be unstable yet helpful and may contains features that are locked behind donations or my dumb ideas.
 
+     SDL-Clipboard.patch - SDL Clipboard support patch for QEMU version 10.0.x 
+
 **Please use it with caution!**
 
 # Roadmap
@@ -10,6 +12,7 @@ The content is inside this folder or already released in this repository.
 - Updating QEMU-3dfx to latest Version
 - Windows binaries
 - Host OpenGlide binaries
+- SDL Clipboard support
 
 ## Planned Content
 - How to compile other wrappers and tools for Addons Disk (Advanced Wrapper Disk)

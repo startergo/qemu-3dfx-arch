@@ -6,7 +6,7 @@
 _pkgname=qemu-3dfx
 pkgname="$_pkgname"-arch
 _qemuver=10.0.0
-pkgver=v9.2.3.r534.c305da5
+pkgver=v10.0.0.r550.926b531
 pkgrel=1
 pkgdesc="MESA GL/3Dfx Glide pass-through for QEMU (Forked repository)"
 arch=("x86_64")
@@ -119,6 +119,7 @@ pkgver() {
 
 prepare() {
     # Prepare source
+    rm -rf "$srcdir"/"$_pkgname"/qemu-${_qemuver}
     tar xf qemu-${_qemuver}.tar.xz -C "$_pkgname"
 
     # Patch source
@@ -127,6 +128,7 @@ prepare() {
 
     # Change patch per major release
     patch -p0 -i  ../00-qemu100x-mesa-glide.patch
+    patch -p0 -i ../qemu-exp/SDL-Clipboard.patch
 
     bash ../scripts/sign_commit
     rm -rf "$srcdir"/"$_pkgname"/build
@@ -136,7 +138,7 @@ prepare() {
 build() {
     # Build QEMU
     cd "$srcdir"/"$_pkgname"/build
-    ../qemu-${_qemuver}/configure --target-list="i386-softmmu x86_64-softmmu" --disable-xen --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
+    ../qemu-${_qemuver}/configure --target-list="i386-softmmu x86_64-softmmu" --disable-xen --enable-gtk-clipboard --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
     make clean
     make -j$(nproc) qemu-system-i386 qemu-system-x86_64
 

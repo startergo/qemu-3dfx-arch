@@ -15,6 +15,7 @@ TARGETICD=qmfxgl32.dll
 TOOLSTS=wgltest.exe
 TOOLSIN=wglinfo.exe
 TOOLSGL=wglgears.exe
+TOOLSPB=pbuffer.exe
 GENDEF=gendef
 OUTDIR=$(shell basename `pwd`)
 
@@ -30,8 +31,8 @@ ifdef SOFTGPU
 CFLAGS := $(filter-out -flto=auto -march=x86-64-v2 -mtune=generic  -Werror,$(CFLAGS)) -march=pentium2 -mtune=core2
 endif
 
-all: fxlib $(TARGET) exports-check $(TOOLSTS)
-all+: fxlib $(TARGET) $(TARGETICD) exports-check $(TOOLSTS) $(TOOLSIN) $(TOOLSGL)
+all: fxlib $(TARGET) exports-check $(TOOLSTS) 
+all+: fxlib $(TARGET) $(TARGETICD) exports-check $(TOOLSTS) $(TOOLSIN) $(TOOLSGL) $(TOOLSPB)
 
 exports-check: $(TARGET)
 	@if [ $$(objdump -x $(TARGET) | grep "\[[\ 0-9]*\]" | grep -v "^\[" | \
@@ -65,8 +66,12 @@ $(TOOLSTS):
 	@make -C ../wgltest OUTDIR=$(OUTDIR) CROSS=$(CROSS)
 
 $(TOOLSGL):
-	@echo "  LD  $@"
-	@$(CC) $(CFLAGS) -s -o $@ $(SRCDIR)/wglgears.c $(LDFLAGS) -lgdi32 -lopengl32
+	@rm -f ../demos/wglgears{.exe,.res}
+	@make -C ../demos wglgears.exe OUTDIR=$(OUTDIR) CROSS=$(CROSS)
+
+$(TOOLSPB):
+	@rm -f ../demos/pbuffer{.exe,.res}
+	@make -C ../demos pbuffer.exe OUTDIR=$(OUTDIR) CROSS=$(CROSS)
 
 $(TOOLSIN):
 	@echo "  LD  $@"
@@ -107,5 +112,5 @@ clean:
 	    strings $(TARGET) | grep " build "; fi
 
 distclean: clean
-	@rm -f $(TARGET) $(TARGETICD) $(TOOLSIN) $(TOOLSGL) $(TOOLSTS)
+	@rm -f $(TARGET) $(TARGETICD) $(TOOLSIN) $(TOOLSGL) $(TOOLSTS) $(TOOLSPB)
 	@make -C ../wgltest $@ OUTDIR=$(OUTDIR)

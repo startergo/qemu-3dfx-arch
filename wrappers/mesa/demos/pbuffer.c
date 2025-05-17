@@ -75,7 +75,7 @@ static void initPbuffer()
     int fmts[64];
     unsigned nfmts = 0;
     if (!wglChoosePixelFormatARB_func(wglGetCurrentDC(), ia, fa, _countof(fmts), fmts, &nfmts) || !nfmts) {
-        printf("wglChoosePixelFormat FAILED -- nfmts %d,  GetLastError 0x%08X\n", nfmts, GetLastError());
+        printf("wglChoosePixelFormat FAILED -- nfmts %d,  GetLastError 0x%08lX\n", nfmts, GetLastError());
         getchar();
         exit(0);
     }
@@ -419,7 +419,7 @@ make_window(const char *name, int x, int y, int width, int height)
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInst;
-    wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
+    wc.hIcon = (HICON)LoadIconA(wc.hInstance, MAKEINTRESOURCE(101));
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = NULL;
     wc.lpszMenuName = NULL;
@@ -526,6 +526,7 @@ make_window(const char *name, int x, int y, int width, int height)
     ShowWindow(hWnd, SW_SHOW);
     SetForegroundWindow(hWnd);
     SetFocus(hWnd);
+    SetWindowText(hWnd, "OpenGL Pixel buffer Demo");
 }
 
 static void
@@ -553,7 +554,7 @@ event_loop(void)
 }
 
 static void
-parse_geometry(const char *str, int *x, int *y, unsigned int *w, unsigned int *h)
+parse_geometry(const char *str, int *x, int *y, int *w, int *h)
 {
     char *end;
     if (*str == '=')

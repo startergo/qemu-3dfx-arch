@@ -6,8 +6,8 @@ watcom/
 bin/src/
 bin/pkg/
 build/
-wrappers/3dfx/build
-wrappers/mesa/build
+wrappers/3dfx/build*
+wrappers/mesa/build*
 *.iso
 *.qcw
 *.qcow
@@ -38,6 +38,8 @@ qemu-7*
 qemu-6*
 
 # Wrappers & ISO folders 
+wrappers/*/*/*.exe
+wrappers/*/*/*.res
 wrappers/iso/commit\ id.txt
 wrappers/iso/commit.txt
 wrappers/iso/readme.txt

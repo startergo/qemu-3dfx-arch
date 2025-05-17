@@ -84,6 +84,6 @@ Since kjliew did not provide source code for Wine binaries that work in QEMU-3df
  - If you got some problems with the wrappers (i.e wrappers compiled without 3dfx patches). you should download it on actions tab via "Build Stable Branch" and choose the right commit build.
  - Using NVIDIA driver on Linux may crash QEMU-3dfx when running a OpenGL application. using nouveau can solve it but it still crashes when running DirectX apps instead. Use [Zink](https://wiki.archlinux.org/title/OpenGL#OpenGL_over_Vulkan_(Zink)).
  - ICD support is included via JHRobotics forked repo but disabled by default (im sorry)
- - Making mesa wrappers only compile opengl32.dll and wgltest.exe only. If you want all of them to compile including ICD support, run command in `wrappers/mesa/build` with Makefile
+ - Making mesa wrappers only compile opengl32.dll and wgltest.exe only. If you want all of them to compile including ICD support and demos, run command in `wrappers/mesa/build` with Makefile
         
         $ make all+ && make clean

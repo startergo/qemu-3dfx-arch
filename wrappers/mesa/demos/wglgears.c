@@ -77,8 +77,12 @@ static
 void usage(void)
 {
     fprintf (stderr, "usage:\n");
-    fprintf (stderr, "-info              display OpenGL renderer info\n");
-    fprintf (stderr, "-geometry WxH+X+Y  window geometry\n");
+    fprintf (stderr, "  -info              display OpenGL renderer info\n");
+    fprintf (stderr, "  -help              display this message\n");
+    fprintf (stderr, "  -srgb              display gears in sRGB framebuffer\n");
+    fprintf (stderr, "  -geometry WxH+X+Y  window geometry\n");
+    /* kill me */
+    fprintf (stderr, "\n  default is fullscreen because its for qemu-3dfx use lmao\n");
 }
 
 /* return current time (in seconds) */
@@ -378,7 +382,7 @@ make_window(const char *name, int x, int y, int width, int height)
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInst;
-    wc.hIcon = LoadIcon(NULL, IDI_WINLOGO);
+    wc.hIcon = (HICON)LoadIconA(wc.hInstance, MAKEINTRESOURCE(101));
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = NULL;
     wc.lpszMenuName = NULL;
@@ -485,6 +489,7 @@ make_window(const char *name, int x, int y, int width, int height)
     ShowWindow(hWnd, SW_SHOW);
     SetForegroundWindow(hWnd);
     SetFocus(hWnd);
+    SetWindowText(hWnd, "OpenGL Gears Demo");
 }
 
 static void
@@ -569,7 +574,7 @@ parse_geometry(const char *str, int *x, int *y, unsigned int *w, unsigned int *h
 }
 
 static void
-enum_display_setting_current(int *w, int *h)
+enum_display_setting_current(unsigned int *w, unsigned int *h)
 {
     DEVMODE m = { .dmSize = sizeof(DEVMODE) };
     if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &m)) {
@@ -593,6 +598,11 @@ main(int argc, char *argv[])
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-info") == 0) {
             printInfo = GL_TRUE;
+        }
+        /* useless */
+        else if (strcmp(argv[i], "-help") == 0) {
+            usage();
+            return -1;
         }
         else if (strcmp(argv[i], "-srgb") == 0) {
             use_srgb = GL_TRUE;

@@ -59,7 +59,7 @@ This instruction are based in Arch Linux btw, in Bash Shell. Its simple because 
     $ cd ~/myqemu/qemu-3dfx/wrappers/iso
     $ cp ../texts/readme.txt ./readme.txt
     $ bash ../../scripts/sign_binary
-    $ unix2dos readme.txt commit.txt 
+    $ unix2dos readme.txt commit.txt
     $ cd ..
     $ mkisofs -o wrappers.iso ./iso
     
@@ -79,10 +79,15 @@ Since kjliew did not provide source code for Wine binaries that work in QEMU-3df
 5. [Donate to him](https://github.com/kjliew/qemu-3dfx?tab=readme-ov-file#donation).
 6. c̶h̶e̶c̶k̶ ̶a̶r̶c̶h̶i̶v̶e̶.̶o̶r̶g̶.
 
-
 ## Notes
+**NVIDIA Linux Support**
+Using NVIDIA proprietary drivers on Linux may crash QEMU-3dfx when running a 3D application. There are some workarounds to it.
+
+- Use Nouveau (works OpenGL apps,Crashes DirectX apps,Untested Glide apps)
+- Use [Zink](https://wiki.archlinux.org/title/OpenGL#OpenGL_over_Vulkan_(Zink)). (works both,crashes Glide apps)
+
+**Others**
  - If you got some problems with the wrappers (i.e wrappers compiled without 3dfx patches). you should download it on actions tab via "Build Stable Branch" and choose the right commit build.
- - Using NVIDIA driver on Linux may crash QEMU-3dfx when running a OpenGL application. using nouveau can solve it but it still crashes when running DirectX apps instead. Use [Zink](https://wiki.archlinux.org/title/OpenGL#OpenGL_over_Vulkan_(Zink)).
  - ICD support is included via JHRobotics forked repo but disabled by default (im sorry)
  - Making mesa wrappers only compile opengl32.dll and wgltest.exe only. If you want all of them to compile including ICD support and demos, run command in `wrappers/mesa/build` with Makefile
         

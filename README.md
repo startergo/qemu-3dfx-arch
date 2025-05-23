@@ -40,7 +40,7 @@ Witness, experience and share your thoughts on modern CPU/GPU prowess for retro 
 
 **Download Stable Build [Here](https://github.com/kharovtobi/qemu-3dfx-arch/releases/latest)**
 
-Includes released Standalone Windows Binaries,Wrappers,Addons and old PKGBUILD files 
+Includes released Standalone Windows Binaries,Wrappers,Addons and old PKGBUILD files
 
 **Download Github Actions Build [Here](https://github.com/kharovtobi/qemu-3dfx-arch/actions/workflows/build.yaml/)**
 
@@ -59,6 +59,7 @@ This way is simple. Just download the PKGBUILD from GitHub. (Arch-Based distribu
     $ cd qemu-3dfx-arch/packages/qemu-3dfx
     $ makepkg -si
 
+- This defaults to making kjliew's repository.
 - This scripts builds it for you to install into your system.
 - Chroot is recommended! for more details, Go to https://wiki.archlinux.org/title/DeveloperWiki:Building_in_a_clean_chroot
 
@@ -73,19 +74,18 @@ Simple guide to apply the patch:<br>
     $ mkdir ~/myqemu && cd ~/myqemu
     $ git clone https://github.com/kharovtobi/qemu-3dfx-arch.git
     $ cd qemu-3dfx-arch
-    $ wget https://download.qemu.org/qemu-9.2.3.tar.xz
-    $ tar xf qemu-9.2.3.tar.xz
-    $ cd qemu-9.2.3
+    $ wget https://download.qemu.org/qemu-10.0.0.tar.xz
+    $ tar xf qemu-10.0.0.tar.xz
+    $ cd qemu-10.0.0
     $ rsync -r ../qemu-0/hw/3dfx ../qemu-1/hw/mesa ./hw/
-    $ patch -p0 -i ../00-qemu92x-mesa-glide.patch
+    $ patch -p0 -i ../00-qemu100x-mesa-glide.patch
     $ bash ../scripts/sign_commit
     $ mkdir ../build && cd ../build
-    $ ../qemu-9.2.3/configure --target-list=i386-softmmu --prefix=$(pwd)/../install_dir
-    $ make install 
+    $ ../qemu-10.0.0/configure --target-list=i386-softmmu --prefix=$(pwd)/../install_dir
+    $ make install
 
 - This guide makes and installs binaries to install_dir
-- You can also patch any versions in 9.2.x
-- My patch is deprecated for the time being, do not use it.
+- You can also patch any versions in 10.0.x
 - All patch hunks must be successful in order for the binary to run properly or you may have BSOD when running Windows 98 for the first time and not work as intended.
 - This steps may be subject to change as there may be errors when compiling. refer to [cflag.txt](cflag.txt) and add it to configure.
 
@@ -94,6 +94,7 @@ Simple guide to apply the patch:<br>
 This way adds VirGL patches for the binary (Windows and MacOS)
 
 - Recommended for 8.2.x or 7.2.x only?
+- Not Tested yet...
 - If you compile the binary using patched VirGL package without patching it first will have an error. ([reference](https://github.com/msys2/MINGW-packages/issues/10547))
 
 ## Building Guest Wrappers
@@ -116,3 +117,4 @@ Refer to [Wrapper Readme](wrappers/README.md) for more info.
 - KJ Liew - For making QEMU-3dfx 
 - JHRobotics - For making ICD support
 - cyanea-bt - For script reference used for `build.yaml`
+- xutaxkamay - For making SDL clipboard support

@@ -368,7 +368,7 @@ diff -Nru ../orig/qemu-10.0.0/ui/sdl2.c ./ui/sdl2.c
              sdl_grab_end(scon);
          }
          break;
-@@ -775,6 +801,364 @@
+@@ -775,6 +801,362 @@
      SDL_QuitSubSystem(SDL_INIT_VIDEO);
  }
  
@@ -424,7 +424,6 @@ diff -Nru ../orig/qemu-10.0.0/ui/sdl2.c ./ui/sdl2.c
 +            sdl2_2d_switch(&s->scon->dcl, s->scon->surface);
 +            if (!gui_fullscreen)
 +                SDL_SetWindowPosition(s->scon->real_window, s->scon->x, s->scon->y);
-+            }
 +        }
 +    }
 +    else if (s->gui_saved_res) {
@@ -482,9 +481,9 @@ diff -Nru ../orig/qemu-10.0.0/ui/sdl2.c ./ui/sdl2.c
 +        s->render_pause = 1;
 +        if (!s->opaque)
 +            s->cwnd_fn(s->scon->real_window, s->hnwnd, opaque);
++        SDL_GL_MakeCurrent(s->scon->real_window, NULL);
 +    }
 +    else {
-+        SDL_GL_MakeCurrent(s->scon->real_window, NULL);
 +        SDL_GL_DeleteContext(s->scon->winctx);
 +        s->scon->winctx = 0;
 +        s->render_pause = 0;
@@ -501,8 +500,7 @@ diff -Nru ../orig/qemu-10.0.0/ui/sdl2.c ./ui/sdl2.c
 +            if (!s->scon->real_renderer)
 +                s->scon->real_renderer = SDL_CreateRenderer(s->scon->real_window, -1 ,0);
 +        }
-+        if (!s->scon->opengl)
-+            sdl2_2d_switch(&s->scon->dcl, s->scon->surface);
++        sdl2_2d_switch(&s->scon->dcl, s->scon->surface);
 +        timer_del(s->ts);
 +        timer_free(s->ts);
 +        s->ts = 0;

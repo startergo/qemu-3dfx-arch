@@ -13,7 +13,7 @@ wrappers/mesa/build*
 *.qcow
 *.qcow2
 install/
-install_dir/
+install_dir*/
 openglide-3dfx/src/openglide
 wrappers-artifact
 build-timestamp.txt
@@ -37,7 +37,7 @@ qemu-8*
 qemu-7*
 qemu-6*
 
-# Wrappers & ISO folders 
+# Wrappers & ISO folders
 wrappers/*/*/*.exe
 wrappers/*/*/*.res
 wrappers/iso/commit\ id.txt

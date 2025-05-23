@@ -23,18 +23,24 @@ Copy OPENGL32.DLL to Game Installation folders
 Testing
 
 If you have done installing it. Try WGLTEST.EXE or WGLGEARS.EXE on disk. It is expected
-to run it and see some gears or triangles rotating and know the fps or passthough specs.
+to run it and see some gears or triangles rotating and know the fps and passthough specs.
 
 But if you see one of the errors if you did something wrong.
 
-1. (Red) If you got illegal operation error, It means a guest problem. 
-Did you follow the Installation guide properly, forget compiling one of
-wrappers or compiling with different hash?
+1. (Red) If you got illegal operation error like
+"Failure: LoadLibrary(opengl32.dll)=0x454"
 
-2. (Yellow) If you got corrupted dll error. especially OPENGL32.DLL
-It means a guest or host problem.
-You use a dll compiled with different hash (best case)
-This binary is a failure and must be recompiled again. (worst case)
+- Did you follow the Installation guide properly?
+- The Wrapper commit is mismatched. compile both QEMU and wrapper in the same commit.
+
+2. (Yellow) If you got a error like
+"A required DLL file, API-MS-WIN-CRT-CONVERT-L1-1-0.DLL, was not found."
+
+This means this binary is improperly compiled. Consider compiling in a different enviroment
+
+3. (Crashes) If QEMU Crashes. This means there is something wrong with the system or config.
+
+- If you use NVIDIA on Linux, use Zink.
 
 =================================================================================================
 SoftGPU Support
@@ -65,3 +71,4 @@ ICD-ENABLE.REG and reboot
 Notes
 
 - Some texts have some occasional problems due to Text Encoding.
+- Some tests are used in my host system

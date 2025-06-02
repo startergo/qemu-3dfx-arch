@@ -5,8 +5,8 @@
 
 _pkgname=qemu-3dfx
 pkgname="$_pkgname"-arch
-_qemuver=10.0.0
-pkgver=v10.0.0.r550.926b531
+_qemuver=10.0.2
+pkgver=v10.0.2.r565.e9440ce
 pkgrel=1
 pkgdesc="MESA GL/3Dfx Glide pass-through for QEMU (Forked repository)"
 arch=("x86_64")
@@ -108,7 +108,7 @@ source=(
 noextract=("qemu-${_qemuver}.tar.xz")
 sha256sums=(
     'SKIP'
-    '22c075601fdcf8c7b2671a839ebdcef1d4f2973eb6735254fd2e1bd0f30b3896'
+    'ef786f2398cb5184600f69aef4d5d691efd44576a3cff4126d38d4c6fec87759'
     'b94ec59a18f2fc8c0eda31860d2eeed2bf92fe66db773b917de311dece796bf0'
 )
 

@@ -301,7 +301,7 @@ jobs:
       shell: msys2 {0}
       run: |
         echo "Configuring build"
-        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
+        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --prefix=$(pwd)/../install_dir --extra-cflags="-march=generic -mtune=generic -O3 -flto=auto"
 
     - name: Compile build
       working-directory: ./build

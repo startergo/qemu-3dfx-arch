@@ -34,10 +34,15 @@
 #include <GL/wgl.h>
 #include "system/whpx.h"
 
-int MGLUpdateGuestBufo(mapbufo_t *bufo, int add)
+static int bufo_accel_en(void)
+{
+    return 1;
+}
+int MGLUpdateGuestBufo(mapbufo_t *bufo, const int add)
 {
     int ret = (GetBufOAccelEN()
-            || (bufo && bufo->tgt == GL_PIXEL_UNPACK_BUFFER)
+            || (bufo_accel_en() &&
+                (bufo && bufo->tgt == GL_PIXEL_UNPACK_BUFFER))
             )? whpx_enabled():0;
 
     if (ret && bufo) {
@@ -276,7 +281,11 @@ void MGLDeleteContext(int level)
 {
     int n = (level)? ((level % MAX_LVLCNTX)? (level % MAX_LVLCNTX):1):level;
     wglFuncs.MakeCurrent(NULL, NULL);
-    if (n == 0) {
+    if (n) {
+        wglFuncs.DeleteContext(hRC[n]);
+        hRC[n] = 0;
+    }
+    else {
         for (int i = MAX_LVLCNTX; i > 1;) {
             if (hRC[--i]) {
                 wglFuncs.DeleteContext(hRC[i]);
@@ -284,20 +293,23 @@ void MGLDeleteContext(int level)
             }
         }
         MesaBlitFree();
-    }
-    wglFuncs.DeleteContext(hRC[n]);
-    hRC[n] = 0;
-    if (!n)
         MGLActivateHandler(0, 0);
+    }
 }
 
 void MGLWndRelease(void)
 {
     if (hwnd) {
+        if (hRC[0]) {
+            wglFuncs.MakeCurrent(NULL, NULL);
+            wglFuncs.DeleteContext(hRC[0]);
+        }
         MesaInitGammaRamp();
         ReleaseDC(hwnd, hDC);
         TmpContextPurge();
         GLWINDOW_FINI();
+        CompareAttribArray(NULL);
+        hRC[0] = 0;
         hDC = 0;
         hwnd = 0;
     }
@@ -313,13 +325,14 @@ int MGLCreateContext(uint32_t gDC)
     }
     else {
         wglFuncs.MakeCurrent(NULL, NULL);
-        for (i = MAX_LVLCNTX; i > 0;) {
+        for (i = MAX_LVLCNTX; i > 1;) {
             if (hRC[--i]) {
                 wglFuncs.DeleteContext(hRC[i]);
                 hRC[i] = 0;
             }
         }
-        hRC[0] = wglFuncs.CreateContext(hDC);
+        if (!hRC[0])
+            hRC[0] = wglFuncs.CreateContext(hDC);
         ret = (hRC[0])? 0:1;
     }
     return ret;
@@ -568,14 +581,16 @@ void MGLFuncHandler(const char *name)
             argsp[1] = (argsp[0])? i:0;
             if (argsp[1] == 0) {
                 wglFuncs.MakeCurrent(NULL, NULL);
-                for (i = MAX_LVLCNTX; i > 0;) {
-                    if (hRC[--i]) {
-                        wglFuncs.DeleteContext(hRC[i]);
-                        hRC[i] = 0;
+                if (CompareAttribArray((const int *)&argsp[2])) {
+                    for (i = MAX_LVLCNTX; i > 0;) {
+                        if (hRC[--i]) {
+                            wglFuncs.DeleteContext(hRC[i]);
+                            hRC[i] = 0;
+                        }
                     }
+                    MGLActivateHandler(0, 0);
+                    hRC[0] = wglFuncs.CreateContextAttribsARB(hDC, 0, (const int *)&argsp[2]);
                 }
-                MGLActivateHandler(0, 0);
-                hRC[0] = wglFuncs.CreateContextAttribsARB(hDC, 0, (const int *)&argsp[2]);
                 ret = (hRC[0])? 1:0;
             }
             else {
@@ -735,13 +750,34 @@ void MGLFuncHandler(const char *name)
 
 #endif //CONFIG_WIN32
 
+int CompareAttribArray(const int *attrib)
+{
+    static struct {
+        int *array;
+        int len;
+    } s;
+
+    int i;
+    if (!attrib) {
+        s.len = 0;
+        return 0;
+    }
+    for (i = 0; attrib[i]; i+=2);
+    if (i && (s.len == (i * sizeof(int))) && !memcmp(s.array, attrib, s.len))
+        return 0;
+    s.len = i * sizeof(int);
+    s.array = g_realloc(s.array, s.len);
+    memcpy(s.array, attrib, s.len);
+    return 1;
+}
+
 void MGLActivateHandler(const int i, const int d)
 {
     static int last;
 
     if (i != last) {
         last = i;
-        DPRINTF_COND(GLFuncTrace(), "wm_activate %-32d", i);
+        DPRINTF_COND(GLFuncTrace(), "wm_activate %s%-32d", (d)? "dfr ":"imm ", i);
         if (i) {
             deactivateGuiRefSched();
             mesa_renderer_stat(i);
@@ -772,6 +808,8 @@ void MGLMouseWarp(const uint32_t ci)
 static QEMUTimer *ts;
 static void deactivateOnce(void)
 {
+    if (!GetContextZERO())
+        CompareAttribArray(NULL);
     MGLMouseWarp(0);
     mesa_renderer_stat(0);
 }

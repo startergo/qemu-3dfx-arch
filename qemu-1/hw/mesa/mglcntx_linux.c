@@ -38,14 +38,27 @@ int MGLUpdateGuestBufo(mapbufo_t *bufo, int add) { return 0; }
 #endif
 #ifdef CONFIG_LINUX
 #include <linux/version.h>
+#include <sys/utsname.h>
 #include "system/kvm.h"
 
-int MGLUpdateGuestBufo(mapbufo_t *bufo, int add)
+static int bufo_accel_en(void)
+{
+    struct utsname buf;
+
+    if (!uname(&buf)) {
+        int major, patch, sub, i = sscanf(buf.release, "%d.%d.%d", &major, &patch, &sub);
+        if (i == 3) {
+            return (KERNEL_VERSION(major, patch, sub) >=
+                    KERNEL_VERSION(6, 13, 0))? 1:0;
+        }
+    }
+    return 0;
+}
+int MGLUpdateGuestBufo(mapbufo_t *bufo, const int add)
 {
     int ret = (GetBufOAccelEN()
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
-            || (bufo && bufo->tgt == GL_PIXEL_UNPACK_BUFFER)
-#endif
+            || (bufo_accel_en() &&
+                (bufo && bufo->tgt == GL_PIXEL_UNPACK_BUFFER))
             )? kvm_enabled():0;
 
     if (ret && bufo) {
@@ -145,6 +158,10 @@ typedef struct tagPIXELFORMATDESCRIPTOR {
 #define WGL_SAMPLE_BUFFERS_ARB                  0x2041
 #define WGL_SAMPLES_ARB                         0x2042
 /*
+ * WGL_ARB_create_context
+ * WGL_ARB_create_context_profile
+ */
+/*
  * WGL_ARB_render_texture
  * WGL_NV_render_texture_rectangle
 */
@@ -200,17 +217,19 @@ static const int iAttribs[] = {
 
 static int syncFBConfigToPFD(Display *dpy, const GLXFBConfig *fbc, const int nElem)
 {
-    int ret = 0, colorBits, alphaBits;
+    int ret = 0, colorBits;
     for (int i = 0; i < nElem; i++) {
         glXGetFBConfigAttrib(dpy, fbc[i], GLX_BUFFER_SIZE, &colorBits);
-        glXGetFBConfigAttrib(dpy, fbc[i], GLX_ALPHA_SIZE, &alphaBits);
-        if (colorBits == pfd.cColorBits && alphaBits == pfd.cAlphaBits) {
+        XVisualInfo *vinfo = glXGetVisualFromFBConfig(dpy, fbc[i]);
+        if (vinfo->depth == colorBits)
             ret = i;
+        XFree(vinfo);
+        if (ret)
             break;
-        }
     }
     return ret;
 }
+
 static int *iattribs_fb(Display *dpy, const int do_msaa)
 {
     static int ia[] = {
@@ -220,13 +239,13 @@ static int *iattribs_fb(Display *dpy, const int do_msaa)
         GLX_X_VISUAL_TYPE   , GLX_TRUE_COLOR,
         GLX_BUFFER_SIZE     , 32,
         GLX_DEPTH_SIZE      , 24,
+        GLX_ALPHA_SIZE      , 8,
         GLX_STENCIL_SIZE    , 8,
         GLX_DOUBLEBUFFER    , True,
         GLX_SAMPLE_BUFFERS  , 0,
         GLX_SAMPLES         , 0,
         None
     };
-
     for (int i = 0; ia[i]; i+=2) {
         switch(ia[i]) {
             case GLX_SAMPLE_BUFFERS:
@@ -257,8 +276,8 @@ static int cAlphaBits, cDepthBits, cStencilBits;
 static int cAuxBuffers, cSampleBuf[2];
 
 static struct {
-    int (*SwapIntervalEXT)(unsigned int);
-    int (*GetSwapIntervalEXT)(void);
+    void (*SwapIntervalEXT)(Display *, GLXDrawable, int);
+    int has_mesa_exts;
 } xglFuncs;
 
 int glwnd_ready(void) { return qatomic_read(&wnd_ready); }
@@ -336,16 +355,10 @@ void MGLTmpContext(void)
     Display *tmpDisp = XOpenDisplay(NULL);
     xcstr = glXGetClientString(tmpDisp, GLX_VENDOR);
     xstr = glXQueryExtensionsString(tmpDisp, DefaultScreen(tmpDisp));
-    if (find_xstr(xstr, "GLX_MESA_swap_control")) {
-        xglFuncs.SwapIntervalEXT = (int (*)(unsigned int))
-            MesaGLGetProc("glXSwapIntervalMESA");
-        xglFuncs.GetSwapIntervalEXT = (int (*)(void))
-            MesaGLGetProc("glXGetSwapIntervalMESA");
-    }
-    else {
-        xglFuncs.SwapIntervalEXT = 0;
-        xglFuncs.GetSwapIntervalEXT = 0;
-    }
+    if (find_xstr(xstr, "GLX_EXT_swap_control"))
+        xglFuncs.SwapIntervalEXT = (void (*)(Display *, GLXDrawable, int))
+            MesaGLGetProc("glXSwapIntervalEXT");
+    xglFuncs.has_mesa_exts = find_xstr(xstr, "GLX_MESA_swap_control");
     XCloseDisplay(tmpDisp);
 }
 
@@ -353,7 +366,11 @@ void MGLDeleteContext(int level)
 {
     int n = (level)? ((level % MAX_LVLCNTX)? (level % MAX_LVLCNTX):1):level;
     glXMakeContextCurrent(dpy, None, None, NULL);
-    if (n == 0) {
+    if (n) {
+        glXDestroyContext(dpy, ctx[n]);
+        ctx[n] = 0;
+    }
+    else {
         for (int i = MAX_LVLCNTX; i > 1;) {
             if (ctx[--i]) {
                 glXDestroyContext(dpy, ctx[i]);
@@ -361,20 +378,23 @@ void MGLDeleteContext(int level)
             }
         }
         MesaBlitFree();
-    }
-    glXDestroyContext(dpy, ctx[n]);
-    ctx[n] = 0;
-    if (!n)
         MGLActivateHandler(0, 0);
+    }
 }
 
 void MGLWndRelease(void)
 {
     if (win) {
+        if (ctx[0]) {
+            glXMakeContextCurrent(dpy, None, None, NULL);
+            glXDestroyContext(dpy, ctx[0]);
+        }
         MesaInitGammaRamp();
         XFree(xvi);
         XCloseDisplay(dpy);
         mesa_release_window();
+        CompareAttribArray(NULL);
+        ctx[0]= 0;
         xvi = 0;
         dpy = 0;
         win = 0;
@@ -390,13 +410,14 @@ int MGLCreateContext(uint32_t gDC)
     }
     else {
         glXMakeContextCurrent(dpy, None, None, NULL);
-        for (i = MAX_LVLCNTX; i > 0;) {
+        for (i = MAX_LVLCNTX; i > 1;) {
             if (ctx[--i]) {
                 glXDestroyContext(dpy, ctx[i]);
                 ctx[i] = 0;
             }
         }
-        ctx[0] = glXCreateContext(dpy, xvi, NULL, true);
+        if (!ctx[0])
+            ctx[0] = glXCreateContext(dpy, xvi, NULL, true);
         ret = (ctx[0])? 0:1;
     }
     return ret;
@@ -413,12 +434,12 @@ int MGLMakeCurrent(uint32_t cntxRC, int level)
         if (ContextVsyncOff()) {
             const int val = 0;
             if (xglFuncs.SwapIntervalEXT)
-                xglFuncs.SwapIntervalEXT(val);
-            else if (find_xstr(xstr, "GLX_EXT_swap_control")) {
-                void (*p_glXSwapIntervalEXT)(Display *, GLXDrawable, int) =
-                    (void (*)(Display *, GLXDrawable, int)) MesaGLGetProc("glXSwapIntervalEXT");
-                if (p_glXSwapIntervalEXT)
-                    p_glXSwapIntervalEXT(dpy, win, val);
+                xglFuncs.SwapIntervalEXT(dpy, win, val);
+            else if (xglFuncs.has_mesa_exts) {
+                int (*SwapIntervalMESA)(unsigned int) =
+                    (int (*)(unsigned int)) MesaGLGetProc("glXSwapIntervalMESA");
+                if (SwapIntervalMESA)
+                    SwapIntervalMESA(val);
             }
         }
         if (!n)
@@ -465,6 +486,7 @@ static int MGLPresetPixelFormat(void)
     DPRINTF("FBConfig 0x%03x visual 0x%03lx nAux %d nSamples %d %d vidMode %d %s",
         fbid, xvi->visualid, cAuxBuffers, cSampleBuf[0], cSampleBuf[1], xvidmode,
         ContextUseSRGB()? "sRGB":"");
+    DPRINTF("..using %s", (xglFuncs.SwapIntervalEXT)? "GLX_EXT_swap_control":"GLX_MESA_swap_control");
     MesaInitGammaRamp();
     XFree(fbcnf);
     XFlush(dpy);
@@ -613,38 +635,67 @@ void MGLFuncHandler(const char *name)
         return;
     }
     FUNCP_HANDLER("wglSwapIntervalEXT") {
-        int val = -1;
-        if (xglFuncs.SwapIntervalEXT)
-            val = xglFuncs.SwapIntervalEXT(argsp[0]);
-        else if (find_xstr(xstr, "GLX_EXT_swap_control")) {
-            void (*p_glXSwapIntervalEXT)(Display *, GLXDrawable, int) =
-                (void (*)(Display *, GLXDrawable, int)) MesaGLGetProc("glXSwapIntervalEXT");
-            if (p_glXSwapIntervalEXT) {
-                p_glXSwapIntervalEXT(dpy, win, argsp[0]);
-                val = 0;
+        if (!xglFuncs.SwapIntervalEXT && xglFuncs.has_mesa_exts) {
+            uint32_t ret = 0;
+            int (*GetSwapIntervalMESA)(void) =
+                (int (*)(void)) MesaGLGetProc("glXGetSwapIntervalMESA");
+            int (*SwapIntervalMESA)(unsigned int) =
+                (int (*)(unsigned int)) MesaGLGetProc("glXSwapIntervalMESA");
+            if (GetSwapIntervalMESA && SwapIntervalMESA) {
+                int curr = GetSwapIntervalMESA();
+                if (curr != argsp[0]) {
+                    ret = SwapIntervalMESA(argsp[0])? 0:1;
+                    DPRINTF("wglSwapIntervalEXT(%u) %s %-24u", argsp[0], ((ret)? "ret":"err"), ret);
+                }
+                else {
+                    ret = 1;
+                    DPRINTF("wglSwapIntervalEXT(%u) curr %d ret %-24u", argsp[0], curr, ret);
+                }
             }
-        }
-        if (val != -1) {
-            DPRINTF("wglSwapIntervalEXT(%u) %s %-24u", argsp[0], ((val)? "err":"ret"), ((val)? val:1));
-            argsp[0] = (val)? 0:1;
+            argsp[0] = ret;
             return;
         }
-        /* XQuartz/GLX missing swap_control */
-        if (!find_xstr(xstr, "GLX_MESA_swap_control") &&
-            !find_xstr(xstr, "GLX_EXT_swap_control")) {
+        else {
+            /* XQuartz/GLX missing swap_control */
+            if (!xglFuncs.SwapIntervalEXT) {
+                argsp[0] = 1;
+                return;
+            }
+            int curr;
+            glXQueryDrawable(dpy, win, GLX_SWAP_INTERVAL_EXT, (unsigned int *)&curr);
+            if (curr != argsp[0]) {
+                xglFuncs.SwapIntervalEXT(dpy, win, argsp[0]);
+                DPRINTF("wglSwapIntervalEXT(%u) ret %-24u", argsp[0], 1);
+            }
+            else {
+                DPRINTF("wglSwapIntervalEXT(%u) curr %d ret %-24u", argsp[0], curr, 1);
+            }
             argsp[0] = 1;
             return;
         }
     }
     FUNCP_HANDLER("wglGetSwapIntervalEXT") {
-        int val = -1;
-        if (xglFuncs.GetSwapIntervalEXT)
-            val = xglFuncs.GetSwapIntervalEXT();
-        else if (find_xstr(xstr, "GLX_EXT_swap_control"))
-            glXQueryDrawable(dpy, win, GLX_SWAP_INTERVAL_EXT, (unsigned int *)&val);
-        if (val != -1) {
-            argsp[0] = val;
-            DPRINTF("wglGetSwapIntervalEXT() ret %-24u", argsp[0]);
+        if (!xglFuncs.SwapIntervalEXT && xglFuncs.has_mesa_exts) {
+            uint32_t ret;
+            int (*GetSwapIntervalMESA)(void) =
+                (int (*)(void)) MesaGLGetProc("glXGetSwapIntervalMESA");
+            if (GetSwapIntervalMESA) {
+                ret = GetSwapIntervalMESA();
+                DPRINTF("wglGetSwapIntervalEXT() ret %-24u", ret);
+            }
+            argsp[0] = ret;
+            return;
+        }
+        else {
+            /* XQuartz/GLX missing swap_control */
+            if (!xglFuncs.SwapIntervalEXT) {
+                argsp[0] = 1;
+                return;
+            }
+            uint32_t ret;
+            glXQueryDrawable(dpy, win, GLX_SWAP_INTERVAL_EXT, &ret);
+            DPRINTF("wglGetSwapIntervalEXT() ret %-24u", ret);
+            argsp[0] = ret;
             return;
         }
     }
@@ -684,14 +735,16 @@ void MGLFuncHandler(const char *name)
             argsp[1] = (argsp[0])? i:0;
             if (argsp[1] == 0) {
                 glXMakeContextCurrent(dpy, None, None, NULL);
-                for (i = MAX_LVLCNTX; i > 0;) {
-                    if (ctx[--i]) {
-                        glXDestroyContext(dpy, ctx[i]);
-                        ctx[i] = 0;
+                if (CompareAttribArray((const int *)&argsp[2])) {
+                    for (i = MAX_LVLCNTX; i > 0;) {
+                        if (ctx[--i]) {
+                            glXDestroyContext(dpy, ctx[i]);
+                            ctx[i] = 0;
+                        }
                     }
+                    MGLActivateHandler(0, 0);
+                    ctx[0] = fp(dpy, fbcnf[fi], 0, True, (const int *)&argsp[2]);
                 }
-                MGLActivateHandler(0, 0);
-                ctx[0] = fp(dpy, fbcnf[fi], 0, True, (const int *)&argsp[2]);
                 ret = (ctx[0])? 1:0;
             }
             else {

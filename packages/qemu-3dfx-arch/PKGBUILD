@@ -1,14 +1,15 @@
 # Courtesy from kharovtobi <https://github.com/kharovtobi>
 # Most of the repository source code is not my work! it belongs to kjliew at https://github.com/kjliew/qemu-3dfx (pls support him)
-# Do not post this into AUR (people may be confused)
+# Do not post this into AUR (okay nvm, maybe?)
 # The PKGBUILD is dependent on My repository and uses my patch (was for now).
 
 _pkgname=qemu-3dfx
+_qemuver=10.1.0
+_patch=qemu100x-mesa-glide.patch
 pkgname="$_pkgname"-arch
-_qemuver=10.0.2
-pkgver=v10.0.2.r565.e9440ce
+pkgver=v10.1.0.r577.21bcf9e
 pkgrel=1
-pkgdesc="MESA GL/3Dfx Glide pass-through for QEMU (Forked repository)"
+pkgdesc="MESA GL/3Dfx Glide pass-through for QEMU"
 arch=("x86_64")
 url="https://github.com/kharovtobi/qemu-3dfx-arch"
 license=('GPL-2.0')
@@ -81,6 +82,8 @@ makedepends=(
     "python-sphinx_rtd_theme"
     "pixman"
     "rsync"
+    "rdma-core"
+    "rutabaga-ffi"
     "sdl2"
     "sdl2_image"
     "snappy"
@@ -93,24 +96,20 @@ makedepends=(
     "vte3"
     "xxd"
     "zlib"
-    "zstd"
-)
+    "zstd")
 optdepends=("qemu-docs: for documentation and learning invocation"
-            "openglide-3dfx: host glide wrappers"
-)
+            "openglide-3dfx: host glide wrappers")
 provides=("qemu-3dfx" "qemu-3dfx-arch")
 conflicts=("qemu-3dfx")
 source=(
-    "git+https://github.com/kharovtobi/qemu-3dfx.git"
+    "git+https://github.com/kharovtobi/qemu-3dfx-arch.git"
     "https://download.qemu.org/qemu-${_qemuver}.tar.xz"
-    "${pkgname}.install"
-)
+    "${pkgname}.install")
 noextract=("qemu-${_qemuver}.tar.xz")
 sha256sums=(
     'SKIP'
-    'ef786f2398cb5184600f69aef4d5d691efd44576a3cff4126d38d4c6fec87759'
-    'b94ec59a18f2fc8c0eda31860d2eeed2bf92fe66db773b917de311dece796bf0'
-)
+    'e0517349b50ca73ebec2fa85b06050d5c463ca65c738833bd8fc1f15f180be51'
+    'b94ec59a18f2fc8c0eda31860d2eeed2bf92fe66db773b917de311dece796bf0')
 
 pkgver() {
     cd "$srcdir"/"$_pkgname"
@@ -127,7 +126,7 @@ prepare() {
     rsync -r ../qemu-0/hw/3dfx ../qemu-1/hw/mesa ./hw/
 
     # Change patch per major release
-    patch -p0 -i  ../00-qemu100x-mesa-glide.patch
+    patch -p0 -i  ../${_patch}
     patch -p0 -i ../qemu-exp/SDL-Clipboard.patch
 
     bash ../scripts/sign_commit
@@ -140,7 +139,15 @@ build() {
     cd "$srcdir"/"$_pkgname"/build
     ../qemu-${_qemuver}/configure --target-list="i386-softmmu x86_64-softmmu" --disable-xen --enable-gtk-clipboard --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
     make clean
-    make -j$(nproc) qemu-system-i386 qemu-system-x86_64
+    make qemu-system-i386 qemu-system-x86_64
+
+    # Check if there is MINGW compiler https://github.com/LuizRafael79/mingw32-msvcrt
+    if [ -f /opt/win32/owsetenv.sh ]; then
+        msg "MINGW compiler found!"
+        source /opt/win32/owsetenv.sh
+    else
+        msg "MINGW compiler not found! (don't blame me when the wrappers don't work)"
+    fi
 
     # Build Wrappers
     source /opt/watcom/owsetenv.sh

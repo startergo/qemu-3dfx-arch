@@ -11,7 +11,7 @@ on:
 jobs:
    MINGW64-Windows:
    
-     runs-on: windows-2019       
+     runs-on: windows-latest      
      env:
       pkgver: '10.0.2'
       patch:  '00-qemu100x-mesa-glide.patch'
@@ -181,7 +181,7 @@ jobs:
 
    UCRT64-Windows:
 
-    runs-on: windows-2019
+    runs-on: windows-latest
     env:
      pkgver: '10.0.2'
      patch:  '00-qemu100x-mesa-glide.patch'
@@ -353,7 +353,7 @@ jobs:
         
    Wrappers:
    
-    runs-on: windows-2019       
+    runs-on: windows-latest      
      
     steps:  
     - name: Checkout repo

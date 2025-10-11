@@ -35,7 +35,7 @@ This repository includes patches from upstream and my patches that work on lates
 
 ## QEMU Windows Guests Glide/OpenGL/Direct3D Acceleration
 
-Witness, experience and share your thoughts on modern CPU/GPU prowess for retro Windows games on Apple Silicon macOS, Windows 10/11 and modern Linux. Most games can be installed and played in pristine condition without the hassle of hunting down unofficial, fan-made patches to play them on Windows 10/later or modern Linux/Wine. And now it's updated for rolling release and added some tools and libraries i copied on the internet to make the experience better (as long i have free time).
+Witness, experience and share your thoughts on modern CPU/GPU prowess for retro Windows games on Apple Silicon macOS, Windows 10/11 and modern Linux. Most games can be installed and played in pristine condition without the hassle of hunting down unofficial, fan-made patches to play them on Windows 10/later or modern Linux/Wine. And now it's updated for rolling release and added some tools and libraries I copied on the internet to make the experience better (as long i have free time).
 
 - Original repository (<https://github.com/kjliew/qemu-3dfx>)
 - YouTube channel (<https://www.youtube.com/@qemu-3dfx/videos>)
@@ -47,7 +47,7 @@ Witness, experience and share your thoughts on modern CPU/GPU prowess for retro 
 
 **Download Stable Build [Here](https://github.com/kharovtobi/qemu-3dfx-arch/releases/latest)**
 
-Includes released Standalone Windows Binaries, Wrappers, Addons and old PKGBUILD files
+Includes released Standalone Windows Binaries, Wrappers, Add-ons and old PKGBUILD files
 
 **Download GitHub Actions Build [Here](https://github.com/kharovtobi/qemu-3dfx-arch/actions/workflows/build.yaml/)**
 

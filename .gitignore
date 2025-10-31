@@ -12,6 +12,7 @@ wrappers/mesa/build*
 *.qcw
 *.qcow
 *.qcow2
+build-*/
 install/
 install_dir*/
 openglide-3dfx/src/openglide

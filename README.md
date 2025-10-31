@@ -21,13 +21,13 @@ For more info. Refer to the [original repo](https://github.com/kjliew/qemu-3dfx)
 
 This repository includes patches from upstream and my patches that work on latest version.
 
-**My patches**
+### My patches
 
      00-qemu110x-mesa-glide.patch - Patch for QEMU version 10.1.x (MESA & Glide)
      01-qemu100x-mesa-glide.patch - Patch for QEMU version 10.0.x (MESA & Glide)
      02-qemu92x-mesa-glide.kht.patch - Patch for QEMU version 9.2.x (MESA & Glide) (deprecated)
 
-**KJ Liew's patches**
+### KJ Liew's patches
 
     00-qemu92x-mesa-glide.patch - Patch for QEMU version 9.2.x (MESA & Glide)
     01-qemu82x-mesa-glide.patch - Patch for QEMU version 8.2.x (MESA & Glide)
@@ -45,11 +45,11 @@ Witness, experience and share your thoughts on modern CPU/GPU prowess for retro 
 
 ## Downloading QEMU
 
-**Download Stable Build [Here](https://github.com/kharovtobi/qemu-3dfx-arch/releases/latest)**
+**[Download Stable Build](https://github.com/kharovtobi/qemu-3dfx-arch/releases/latest)**
 
 Includes released Standalone Windows Binaries, Wrappers, Add-ons and old PKGBUILD files
 
-**Download GitHub Actions Build [Here](https://github.com/kharovtobi/qemu-3dfx-arch/actions/workflows/build.yaml/)**
+**[GitHub Actions Build](https://github.com/kharovtobi/qemu-3dfx-arch/actions/workflows/build.yaml/)**
 
 Includes latest commit Windows Binaries and Wrappers (requires a GitHub Account)
 
@@ -57,7 +57,7 @@ Includes latest commit Windows Binaries and Wrappers (requires a GitHub Account)
 
 There are two ways to build this repo. While this is repo is used for Arch Linux, It can also build on other OS like Windows 10 with MSYS2 too.
 
-**Convenience Way**
+### Convenience Way
 
 This way is simple. Just download the PKGBUILD from GitHub. (Arch-Based distributions)
 
@@ -70,11 +70,11 @@ This way is simple. Just download the PKGBUILD from GitHub. (Arch-Based distribu
 - This script builds it for you to install into your system.
 - Chroot is recommended! For more details, Go to <https://wiki.archlinux.org/title/DeveloperWiki:Building_in_a_clean_chroot>
 
-**Traditional Way**
+### Traditional Way
 
 This way is basically the same, But less tedious and compiles only the essentials and installs to a folder making it much faster. (Any operating systems)
 
-Simple guide to apply the patch:<br>
+Simple guide to apply the patch:
 (using `00-qemu110x-mesa-glide.patch`)
 
     mkdir ~/myqemu && cd ~/myqemu
@@ -95,7 +95,7 @@ Simple guide to apply the patch:<br>
 - All patch hunks must be successful in order for the binary to run properly, or you may have BSOD when running Windows 98 for the first time and not work as intended.
 - These steps may be subject to change as there may be errors when compiling. Refer to [cflag.txt](cflag.txt) and add it to configure.
 
-**VirGL with SDL2 OpenGL Support**
+### VirGL with SDL2 OpenGL Support
 
 This way adds VirGL patches for the binary (Windows and MacOS)
 

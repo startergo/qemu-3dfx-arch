@@ -151,7 +151,7 @@ jobs:
        shell: msys2 {0}
        run: |
         echo "Compiling Build"
-        make -j$(nproc)
+        ninja -j$(nproc) install
 
      - name: Compile Host Openglide
        working-directory: ./build
@@ -334,7 +334,7 @@ jobs:
       shell: msys2 {0}
       run: |
         echo "Compiling Build"
-        make -j$(nproc)
+        ninja -j$(nproc) install
 
     - name: Compile Host Openglide
       working-directory: ./build

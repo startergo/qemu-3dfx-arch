@@ -10,14 +10,12 @@
  #include "ui/kbd-state.h"
  #ifdef CONFIG_OPENGL
  # include "ui/egl-helpers.h"
-@@ -45,5 +48,8 @@
-     bool gui_keysym;
+@@ -46,3 +46,6 @@
      SDL_GLContext winctx;
      QKbdState *kbd;
 +#ifdef CONFIG_SDL_CLIPBOARD
 +    QemuClipboardPeer cbpeer;
 +#endif
-     bool has_dmabuf;
  #ifdef CONFIG_OPENGL
 @@ -97,4 +105,11 @@
  void sdl2_gl_scanout_flush(DisplayChangeListener *dcl,
@@ -79,7 +77,7 @@
    ui_modules += {'sdl' : sdl_ss}
 --- qemu-10.1.2/ui/sdl2.c	2025-10-20 15:44:01
 +++ qemu-10.1.2-patched/ui/sdl2.c	2025-11-26 09:07:45
-@@ -616,12 +616,18 @@
+@@ -616,13 +616,19 @@
           * key is released.
           */
          scon->ignore_hotkeys = get_mod_state();
@@ -88,7 +86,8 @@
 +#endif
          break;
      case SDL_WINDOWEVENT_FOCUS_LOST:
-         if (gui_grab && !gui_fullscreen) {
+         if (!fxui_focus_lost() && gui_grab && !gui_fullscreen) {
+             fxui_grab_val(0x80 | gui_grab);
              sdl_grab_end(scon);
          }
 +#ifdef CONFIG_SDL_CLIPBOARD
@@ -439,11 +438,8 @@ diff --git a/ui/vdagent.c b/ui/vdagent.c
 index bb0c4aa..6369cd8 100644
 --- a/ui/vdagent.c
 +++ b/ui/vdagent.c
-@@ -192,6 +192,7 @@ static void vdagent_send_caps(VDAgentChardev *vd, bool request)
-         caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_BY_DEMAND);
-         caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_SELECTION);
-         caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL);
+@@ -200,3 +200,4 @@ static void vdagent_send_caps(VDAgentChardev *vd, bool request)
+ #if CHECK_SPICE_PROTOCOL_VERSION(0, 14, 1)
+     caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL);
 +        caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_NO_RELEASE_ON_REGRAB);
-     }
- 
-     caps->request = request;
+ #endif

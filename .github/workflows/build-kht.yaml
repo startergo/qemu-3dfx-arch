@@ -100,7 +100,6 @@ jobs:
           ${{ env.mspkg }}-spice-gtk
           ${{ env.mspkg }}-spice-protocol
           ${{ env.mspkg }}-usbredir
-          ${{ env.mspkg }}-virglrenderer
           ${{ env.mspkg }}-xz
           ${{ env.mspkg }}-zlib
           ${{ env.mspkg }}-zstd
@@ -126,6 +125,15 @@ jobs:
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
 
+     - name: Build local virglrenderer package
+       shell: msys2 {0}
+       run: |
+        cd virgil3d/MINGW-packages
+        cp PKGBUILD PKGBUILD.ci
+        sed -i "s/mingw_arch=('mingw64')/mingw_arch=('mingw64' 'ucrt64')/" PKGBUILD.ci
+        makepkg-mingw -sCLfc --noconfirm -p PKGBUILD.ci
+        pacman -U --noconfirm mingw-w64-*.pkg.tar.zst
+
      - name: Pre-install Python dependencies
        shell: msys2 {0}
        run: |
@@ -136,7 +144,7 @@ jobs:
        shell: msys2 {0}
        run: |
         echo "Configuring build"
-        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
+        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-tests --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
 
      - name: Compile build
        working-directory: ./build
@@ -274,7 +282,6 @@ jobs:
           ${{ env.mspkg }}-spice-gtk
           ${{ env.mspkg }}-spice-protocol
           ${{ env.mspkg }}-usbredir
-          ${{ env.mspkg }}-virglrenderer
           ${{ env.mspkg }}-xz
           ${{ env.mspkg }}-zlib
           ${{ env.mspkg }}-zstd
@@ -300,6 +307,15 @@ jobs:
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
 
+    - name: Build local virglrenderer package
+      shell: msys2 {0}
+      run: |
+        cd virgil3d/MINGW-packages
+        cp PKGBUILD PKGBUILD.ci
+        sed -i "s/mingw_arch=('mingw64')/mingw_arch=('mingw64' 'ucrt64')/" PKGBUILD.ci
+        makepkg-mingw -sCLfc --noconfirm -p PKGBUILD.ci
+        pacman -U --noconfirm mingw-w64-*.pkg.tar.zst
+
     - name: Pre-install Python dependencies
       shell: msys2 {0}
       run: |
@@ -310,7 +326,7 @@ jobs:
       shell: msys2 {0}
       run: |
         echo "Configuring build"
-        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
+        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-tests --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
 
     - name: Compile build
       working-directory: ./build

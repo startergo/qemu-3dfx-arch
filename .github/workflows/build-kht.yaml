@@ -194,9 +194,9 @@ jobs:
 
     runs-on: windows-2019
     env:
-    pkgver: '10.2.2'
-     patch:  '00-qemu92x-mesa-glide.kht.patch'
-     mspkg: 'mingw-w64-ucrt-x86_64'
+        pkgver: '10.2.2'
+        patch:  '00-qemu92x-mesa-glide.kht.patch'
+        mspkg: 'mingw-w64-ucrt-x86_64'
 
     steps:
     - name: Checkout repo

@@ -13,7 +13,7 @@ jobs:
    
      runs-on: windows-2019       
      env:
-      pkgver: '9.2.2'
+      pkgver: '10.2.2'
       patch:  '00-qemu92x-mesa-glide.kht.patch'
       mspkg: 'mingw-w64-x86_64'
       
@@ -194,7 +194,7 @@ jobs:
 
     runs-on: windows-2019
     env:
-     pkgver: '9.2.2'
+    pkgver: '10.2.2'
      patch:  '00-qemu92x-mesa-glide.kht.patch'
      mspkg: 'mingw-w64-ucrt-x86_64'
 

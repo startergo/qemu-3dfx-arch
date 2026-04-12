@@ -129,9 +129,7 @@ jobs:
        shell: msys2 {0}
        run: |
         cd virgil3d/MINGW-packages
-        cp PKGBUILD PKGBUILD.ci
-        sed -i "s/mingw_arch=('mingw64')/mingw_arch=('mingw64' 'ucrt64')/" PKGBUILD.ci
-        makepkg-mingw -sCLfc --noconfirm -p PKGBUILD.ci
+        makepkg-mingw -sCLfc --noconfirm
         pacman -U --noconfirm mingw-w64-*.pkg.tar.zst
 
      - name: Pre-install Python dependencies
@@ -311,9 +309,7 @@ jobs:
       shell: msys2 {0}
       run: |
         cd virgil3d/MINGW-packages
-        cp PKGBUILD PKGBUILD.ci
-        sed -i "s/mingw_arch=('mingw64')/mingw_arch=('mingw64' 'ucrt64')/" PKGBUILD.ci
-        makepkg-mingw -sCLfc --noconfirm -p PKGBUILD.ci
+        makepkg-mingw -sCLfc --noconfirm
         pacman -U --noconfirm mingw-w64-*.pkg.tar.zst
 
     - name: Pre-install Python dependencies

@@ -7,7 +7,7 @@ pkgver=1.3.0
 pkgrel=1
 pkgdesc='A virtual 3D GPU library, that allows the guest operating system to use the host GPU to accelerate 3D rendering'
 arch=('any')
-mingw_arch=('mingw64')
+mingw_arch=('mingw64' 'ucrt64')
 url='https://virgil3d.github.io/'
 license=(MIT)
 depends=("${MINGW_PACKAGE_PREFIX}-libepoxy")
@@ -19,10 +19,13 @@ _venv=(pyyaml)
 _tag=$pkgver
 source=("virglrenderer-$pkgver.tar.bz2::https://gitlab.freedesktop.org/virgl/virglrenderer/-/archive/$_tag/virglrenderer-$_tag.tar.bz2"
         "0001-Virglrenderer-on-Windows-and-macOS.patch")
+noextract=("virglrenderer-$pkgver.tar.bz2")
 sha256sums=('088040d130eaa0458a978fe7867fbfb1fcf1fdff52bf3b27a00658828bc4189f'
             '4f256eeef6d94e373e72e3c6ee295d10481ba7ec89c350436bffe78743741ad5')
 
 prepare() {
+  echo "Extracting virglrenderer-$pkgver.tar.bz2..."
+  tar -xjf "${srcdir}/virglrenderer-$pkgver.tar.bz2" || true
   cd virglrenderer-$_tag
   mkdir -p src/gallium/include/sys && \
     touch src/gallium/include/sys/ioccom.h

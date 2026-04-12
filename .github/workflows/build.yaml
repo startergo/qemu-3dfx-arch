@@ -130,6 +130,7 @@ jobs:
        shell: msys2 {0}
        run: |
         cd virgil3d/MINGW-packages
+        dos2unix PKGBUILD 0001-Virglrenderer-on-Windows-and-macOS.patch
         makepkg-mingw -sCLfc --noconfirm
         pacman -U --noconfirm mingw-w64-*.pkg.tar.zst
 
@@ -312,6 +313,7 @@ jobs:
       shell: msys2 {0}
       run: |
         cd virgil3d/MINGW-packages
+        dos2unix PKGBUILD 0001-Virglrenderer-on-Windows-and-macOS.patch
         makepkg-mingw -sCLfc --noconfirm
         pacman -U --noconfirm mingw-w64-*.pkg.tar.zst
 

@@ -1,0 +1,12 @@
+# Patch files should always use Unix line endings (LF)
+*.patch eol=lf diff=patch
+*.diff eol=lf diff=patch
+
+# Shell scripts should use Unix line endings
+*.sh eol=lf
+*.bash eol=lf
+
+# Preserve line endings for binary files
+*.tar.* binary
+*.zip binary
+*.exe binary

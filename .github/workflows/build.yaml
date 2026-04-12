@@ -123,6 +123,7 @@ jobs:
         echo "Patching files to src"
         patch -p0 -i ../${{ env.patch }}
         patch -p0 -i ../qemu-exp/qemu-windows-vss-mingw-fix.patch
+        patch -p1 -i ../qemu-exp/qemu-sdl-clipboard.patch
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
 
@@ -306,6 +307,7 @@ jobs:
         echo "Patching files to src"
         patch -p0 -i ../${{ env.patch }}
         patch -p0 -i ../qemu-exp/qemu-windows-vss-mingw-fix.patch
+        patch -p1 -i ../qemu-exp/qemu-sdl-clipboard.patch
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
 

@@ -20,15 +20,15 @@ diff -Nru ../orig/qemu-10.1.0/qga/vss-win32/install.cpp ./qga/vss-win32/install.
  /* Stop QGA VSS provider service using Winsvc API  */
  STDAPI StopService(void)
 
-diff -Nru ../orig/qemu-10.1.0/util/oslib-win32.c ./util/oslib-win32.c
---- ../orig/qemu-10.1.0/util/oslib-win32.c
+diff -Nru ../orig/qemu-10.2.2/util/oslib-win32.c ./util/oslib-win32.c
+--- ../orig/qemu-10.2.2/util/oslib-win32.c
 +++ ./util/oslib-win32.c
-@@ -897,5 +897,29 @@
+@@ -897,4 +897,35 @@
  int qemu_shm_alloc(size_t size, Error **errp)
  {
      error_setg(errp, "Shared memory is not supported.");
      return -1;
- }
++}
 +
 +int qemu_ftruncate64(int fd, int64_t length)
 +{

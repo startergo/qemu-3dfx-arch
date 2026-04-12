@@ -41,6 +41,7 @@ jobs:
           zstd
           ${{ env.mspkg }}-python
           ${{ env.mspkg }}-python-distlib
+          ${{ env.mspkg }}-python-pip
           ${{ env.mspkg }}-python-setuptools
           ${{ env.mspkg }}-python-sphinx
           ${{ env.mspkg }}-python-sphinx_rtd_theme
@@ -124,6 +125,11 @@ jobs:
         patch -p0 -i ../${{ env.patch }}
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
+
+     - name: Pre-install Python dependencies
+       shell: msys2 {0}
+       run: |
+        python3 -m pip install pycotap sphinx sphinxcontrib-serializinghtml
 
      - name: Configure build
        working-directory: ./build
@@ -209,6 +215,7 @@ jobs:
           zstd
           ${{ env.mspkg }}-python
           ${{ env.mspkg }}-python-distlib
+          ${{ env.mspkg }}-python-pip
           ${{ env.mspkg }}-python-setuptools
           ${{ env.mspkg }}-python-sphinx
           ${{ env.mspkg }}-python-sphinx_rtd_theme
@@ -292,6 +299,11 @@ jobs:
         patch -p0 -i ../${{ env.patch }}
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
+
+    - name: Pre-install Python dependencies
+      shell: msys2 {0}
+      run: |
+        python3 -m pip install pycotap sphinx sphinxcontrib-serializinghtml
 
     - name: Configure build
       working-directory: ./build

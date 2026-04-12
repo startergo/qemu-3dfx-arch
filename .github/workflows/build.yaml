@@ -162,7 +162,7 @@ jobs:
         bash ./bootstrap
         mkdir ../build && cd ../build
         ../openglide/configure --disable-sdl && make
-        mkdir ../../../install_dir
+        mkdir -p ../../../install_dir
         cp -v .libs/libglide2x.dll ../../../install_dir/libglide2x.dll
         cp -v .libs/libglide3x.dll ../../../install_dir/libglide3x.dll
         cp -v ../../../MINGW-packages/openglide-3dfx/q3dlog.sh ../../../install_dir/q3dlog.sh
@@ -345,7 +345,7 @@ jobs:
         bash ./bootstrap
         mkdir ../build && cd ../build
         ../openglide/configure --disable-sdl && make
-        mkdir ../../../install_dir
+        mkdir -p ../../../install_dir
         cp -v .libs/libglide2x.dll ../../../install_dir/libglide2x.dll
         cp -v .libs/libglide3x.dll ../../../install_dir/libglide3x.dll
         cp -v ../../../MINGW-packages/openglide-3dfx/q3dlog.sh ../../../install_dir/q3dlog.sh

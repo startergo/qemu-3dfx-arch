@@ -359,7 +359,7 @@ jobs:
         cd ../install_dir
         bash ../scripts/dll_extract
         mkdir -p bin
-        cp -rv ../bin/* ./bin/
+        cp -rv ../build/bin/* ./bin/
         bash ../scripts/sign_binary
         cat <<EOF > version.txt
         QEMU-3dfx-arch (Windows Build)

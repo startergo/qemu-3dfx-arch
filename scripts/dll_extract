@@ -18,7 +18,7 @@ filesdef=(
     "libcurl-4.dll"
     "libdatrie-1.dll"
     "libdav1d-7.dll"
-    "libdb-6.0.dll"
+    "libdb-6*.dll"
     "libdeflate.dll"
     "libepoxy-0.dll"
     "libexpat-1.dll"
@@ -63,6 +63,8 @@ filesdef=(
     "libnfs-14.dll"
     "libnghttp2-14.dll"
     "libnghttp3-9.dll"
+    "libngtcp2-*.dll"
+    "libngtcp2_crypto_ossl-*.dll"
     "libnspr4.dll"
     "libopus-0.dll"
     "liborc-0.4-0.dll"
@@ -87,7 +89,7 @@ filesdef=(
     "libssh2-1.dll"
     "libssl-3-x64.dll"
     "libstdc++-6.dll"
-    "libSvtAv1Enc-3.dll"
+    "libSvtAv1Enc-*.dll"
     "libsystre-0.dll"
     "libtasn1-6.dll"
     "libthai-0.dll"
@@ -130,8 +132,9 @@ esac
 echo "Copying files"
 
 for filedef in "${filesdef[@]}"; do
-    if [[ -f "$MINGW_PREFIX/bin/$filedef" ]]; then
-        cp "$MINGW_PREFIX/bin/$filedef" ./
+    matches=("$MINGW_PREFIX/bin"/$filedef)
+    if [[ -e "${matches[0]}" ]]; then
+        cp "${matches[@]}" ./
     else
         echo "Error: $filedef is missing!" >&2
     fi

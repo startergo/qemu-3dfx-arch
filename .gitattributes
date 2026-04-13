@@ -5,6 +5,7 @@
 # Shell scripts should use Unix line endings
 *.sh eol=lf
 *.bash eol=lf
+scripts/* text eol=lf
 
 # Preserve line endings for binary files
 *.tar.* binary

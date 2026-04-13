@@ -146,7 +146,7 @@ jobs:
         CFLAGS="${CFLAGS//-flto=auto/}"
         CXXFLAGS="${CXXFLAGS//-flto=auto/}"
         LDFLAGS="${LDFLAGS//-flto=auto/}"
-        sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../qemu-${{ env.pkgver }}/configure
+        sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../qemu-${{ env.pkgver }}/meson.build
         ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3" --extra-ldflags="-Wl,--disable-runtime-pseudo-reloc -Wl,--disable-high-entropy-va"
 
      - name: Compile build
@@ -338,7 +338,7 @@ jobs:
         CFLAGS="${CFLAGS//-flto=auto/}"
         CXXFLAGS="${CXXFLAGS//-flto=auto/}"
         LDFLAGS="${LDFLAGS//-flto=auto/}"
-        sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../qemu-${{ env.pkgver }}/configure
+        sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../qemu-${{ env.pkgver }}/meson.build
         ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3" --extra-ldflags="-Wl,--disable-runtime-pseudo-reloc -Wl,--disable-high-entropy-va"
 
     - name: Compile build

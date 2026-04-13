@@ -174,8 +174,12 @@ jobs:
         make install
         cd ../install_dir
           bash ../scripts/dll_extract
-          mkdir -p bin
-          cp -rv ../bin/* ./bin/
+          if [ -d ../build/bin ]; then
+            mkdir -p bin
+            cp -rv ../build/bin/* ./bin/
+          else
+            echo "No build/bin directory found; skipping bin staging"
+          fi
         bash ../scripts/sign_binary
         cat <<EOF > version.txt
         QEMU-3dfx-arch (Windows Build)
@@ -358,8 +362,12 @@ jobs:
         make install
         cd ../install_dir
         bash ../scripts/dll_extract
-        mkdir -p bin
-        cp -rv ../build/bin/* ./bin/
+        if [ -d ../build/bin ]; then
+          mkdir -p bin
+          cp -rv ../build/bin/* ./bin/
+        else
+          echo "No build/bin directory found; skipping bin staging"
+        fi
         bash ../scripts/sign_binary
         cat <<EOF > version.txt
         QEMU-3dfx-arch (Windows Build)

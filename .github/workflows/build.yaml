@@ -147,7 +147,7 @@ jobs:
         echo "Configuring build"
         CFLAGS="${CFLAGS//-flto=auto/}"
         CXXFLAGS="${CXXFLAGS//-flto=auto/}"
-        LDFLAGS="${LDFLAGS//-flto=auto/}"
+        LDFLAGS="${LDFLAGS//-flto=auto/} -Wl,--disable-runtime-pseudo-reloc"
         ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=x86-64-v2 -mtune=generic -O3"
 
      - name: Compile build
@@ -341,7 +341,7 @@ jobs:
         echo "Configuring build"
         CFLAGS="${CFLAGS//-flto=auto/}"
         CXXFLAGS="${CXXFLAGS//-flto=auto/}"
-        LDFLAGS="${LDFLAGS//-flto=auto/}"
+        LDFLAGS="${LDFLAGS//-flto=auto/} -Wl,--disable-runtime-pseudo-reloc"
         ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=x86-64-v2 -mtune=generic -O3"
 
     - name: Compile build

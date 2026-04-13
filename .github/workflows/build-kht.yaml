@@ -143,7 +143,10 @@ jobs:
        shell: msys2 {0}
        run: |
         echo "Configuring build"
-        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
+        CFLAGS="${CFLAGS//-flto=auto/}"
+        CXXFLAGS="${CXXFLAGS//-flto=auto/}"
+        LDFLAGS="${LDFLAGS//-flto=auto/}"
+        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3"
 
      - name: Compile build
        working-directory: ./build
@@ -331,7 +334,10 @@ jobs:
       shell: msys2 {0}
       run: |
         echo "Configuring build"
-        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3 -flto=auto"
+        CFLAGS="${CFLAGS//-flto=auto/}"
+        CXXFLAGS="${CXXFLAGS//-flto=auto/}"
+        LDFLAGS="${LDFLAGS//-flto=auto/}"
+        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=native -mtune=native -O3"
 
     - name: Compile build
       working-directory: ./build

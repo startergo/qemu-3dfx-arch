@@ -25,7 +25,7 @@ sha256sums=('088040d130eaa0458a978fe7867fbfb1fcf1fdff52bf3b27a00658828bc4189f'
 
 prepare() {
   echo "Extracting virglrenderer-$pkgver.tar.bz2..."
-  tar -xjf "${srcdir}/virglrenderer-$pkgver.tar.bz2" || true
+  tar -xjf "${srcdir}/virglrenderer-$pkgver.tar.bz2"
   cd virglrenderer-$_tag
   mkdir -p src/gallium/include/sys && \
     touch src/gallium/include/sys/ioccom.h

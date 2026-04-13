@@ -748,8 +748,11 @@ uint32_t PT_CALL gu3dfLoad(uint32_t arg0, uint32_t arg1) {
     pt0 = (uint32_t *)pt[0]; *pt0 = FEnum_gu3dfLoad;
     ret = *pt0;
     if (ret) {
+        uint32_t format;
+
         memcpy(info->data, &m3df[ALIGNED(1) >> 2], info->mem_required);
-        if (texTableValid(((wr3dfHeader *)info->header)->format))
+        memcpy(&format, ((const uint8_t *)info->header) + (3 * sizeof(uint32_t)), sizeof(format));
+        if (texTableValid(format))
             fifoOutData(SIZE_GU3DFHEADER, (uint32_t)(info->table), SIZE_GUTEXTABLE);
     }
     return ret;

@@ -1,4 +1,4 @@
---- qemu-10.1.2/include/ui/sdl2.h	2025-10-20 15:44:00
+﻿--- qemu-10.1.2/include/ui/sdl2.h	2025-10-20 15:44:00
 +++ qemu-10.1.2-patched/include/ui/sdl2.h	2025-11-26 09:07:45
 @@ -21,6 +21,9 @@
  # include <SDL_image.h>

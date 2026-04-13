@@ -1,4 +1,4 @@
-diff -Nru orig/virglrenderer-1.3.0/meson.build src/virglrenderer-1.3.0/meson.build
+﻿diff -Nru orig/virglrenderer-1.3.0/meson.build src/virglrenderer-1.3.0/meson.build
 diff -Nru orig/virglrenderer-1.3.0/src/gallium/auxiliary/tgsi/tgsi_text.h src/virglrenderer-1.3.0/src/gallium/auxiliary/tgsi/tgsi_text.h
 --- orig/virglrenderer-1.3.0/src/gallium/auxiliary/tgsi/tgsi_text.h
 +++ src/virglrenderer-1.3.0/src/gallium/auxiliary/tgsi/tgsi_text.h

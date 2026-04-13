@@ -1,4 +1,4 @@
-Signed-off-by: Kamay Xutax <admin@xutaxkamay.com>
+﻿Signed-off-by: Kamay Xutax <admin@xutaxkamay.com>
 Original Link: https://lists.nongnu.org/archive/html/qemu-devel/2023-11/msg02237.html
 diff -Nru ../qemu-10.0.0/include/ui/sdl2.h ./include/ui/sdl2.h
 --- ../qemu-10.0.0/include/ui/sdl2.h

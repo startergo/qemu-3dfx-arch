@@ -1,4 +1,4 @@
-﻿# Fix #15
+# Fix #15
 diff -Nru ../orig/qemu-10.1.0/qga/vss-win32/install.cpp ./qga/vss-win32/install.cpp
 --- ../orig/qemu-10.1.0/qga/vss-win32/install.cpp
 +++ ./qga/vss-win32/install.cpp

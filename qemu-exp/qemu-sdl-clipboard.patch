@@ -1,4 +1,4 @@
-﻿--- qemu-10.1.2/include/ui/sdl2.h	2025-10-20 15:44:00
+--- qemu-10.1.2/include/ui/sdl2.h	2025-10-20 15:44:00
 +++ qemu-10.1.2-patched/include/ui/sdl2.h	2025-11-26 09:07:45
 @@ -21,6 +21,9 @@
  # include <SDL_image.h>
@@ -101,7 +101,7 @@
          case SDL_WINDOWEVENT:
              handle_windowevent(ev);
              break;
-+#ifdef CONFIG_SDL_CLIPBOARD
++#if defined(CONFIG_SDL_CLIPBOARD) && defined(SDL_CLIPBOARDUPDATE)
 +        case SDL_CLIPBOARDUPDATE:
 +            sdl2_clipboard_handle_request(scon);
 +            break;
@@ -142,7 +142,7 @@
 +
 +#define SDL_CLIPBOARD_DEBUG 0
 +#if SDL_CLIPBOARD_DEBUG
-+#define DPRINTF(fmt, ...) DPRINTF("" fmt, ##__VA_ARGS__)
++#define DPRINTF(fmt, ...) error_report("" fmt, ##__VA_ARGS__)
 +#else
 +#define DPRINTF(fmt, ...) do {} while (0)
 +#endif
@@ -443,3 +443,5 @@ index bb0c4aa..6369cd8 100644
      caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL);
 +        caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_NO_RELEASE_ON_REGRAB);
  #endif
+
+

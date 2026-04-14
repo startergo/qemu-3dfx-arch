@@ -122,6 +122,7 @@ jobs:
         cd qemu-${{ env.pkgver }}
         echo "Patching files to src"
         patch -p0 -i ../${{ env.patch }}
+        patch -p0 -i ../virgil3d/0001-Virgil3D-with-SDL2-OpenGL.patch
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
 
@@ -314,6 +315,7 @@ jobs:
         cd qemu-${{ env.pkgver }}
         echo "Patching files to src"
         patch -p0 -i ../${{ env.patch }}
+        patch -p0 -i ../virgil3d/0001-Virgil3D-with-SDL2-OpenGL.patch
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
 

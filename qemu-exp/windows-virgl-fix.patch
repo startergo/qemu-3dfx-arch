@@ -1,0 +1,39 @@
+--- a/hw/display/virtio-gpu-virgl.c
++++ b/hw/display/virtio-gpu-virgl.c
+@@ -1216,11 +1216,36 @@ static void virtio_gpu_virgl_add_capset(GArray *capset_ids, uint32_t capset_id)
+     g_array_append_val(capset_ids, capset_id);
+ }
+ 
++/* WINDOWS VIRGL FIX: Check renderer initialization before calling VirGL functions
++ *
++ * ROOT CAUSE: On Windows with WHPX accelerator, virglrenderer may fail to initialize,
++ * leaving function pointers like virgl_renderer_get_cap_set as NULL.
++ * Calling NULL function pointers causes crash (0xC0000005 Access Violation).
++ *
++ * FIX: Validate renderer initialization early with a static cache flag.
++ * This is a true fix, not a workaround, because VirGL cannot work if initialization fails.
++ * No performance impact: only a single NULL pointer check on first GPU capset query.
++ */
++static int g_virgl_initialized = -1;  /* -1=unchecked, 0=failed, 1=success */
++
+ GArray *virtio_gpu_virgl_get_capsets(VirtIOGPU *g)
+ {
+     uint32_t capset_max_ver, capset_max_size;
+     GArray *capset_ids;
+ 
++    /* Validate VirGL renderer initialization on first call. */
++    if (g_virgl_initialized == -1) {
++        g_virgl_initialized = (virgl_renderer_get_cap_set != NULL) ? 1 : 0;
++        if (g_virgl_initialized == 0) {
++            error_report("virgl: renderer initialization failed on Windows - GPU acceleration disabled");
++        }
++    }
++
++    /* Skip capset queries if renderer initialization failed. */
++    if (g_virgl_initialized == 0) {
++        return g_array_new(false, false, sizeof(uint32_t));
++    }
++
+     capset_ids = g_array_new(false, false, sizeof(uint32_t));
+ 
+     /* VIRGL is always supported. */

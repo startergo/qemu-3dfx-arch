@@ -1,27 +1,66 @@
+diff --git a/hw/display/virtio-gpu-virgl.c b/hw/display/virtio-gpu-virgl.c
+index 1129301..69b078d 100644
 --- a/hw/display/virtio-gpu-virgl.c
 +++ b/hw/display/virtio-gpu-virgl.c
-@@ -1216,11 +1216,36 @@ static void virtio_gpu_virgl_add_capset(GArray *capset_ids, uint32_t capset_id)
+@@ -1216,16 +1216,83 @@ static void virtio_gpu_virgl_add_capset(GArray *capset_ids, uint32_t capset_id)
      g_array_append_val(capset_ids, capset_id);
  }
  
++typedef enum VirglCapsetPolicy {
++    VIRGL_CAPSET_POLICY_AUTO,
++    VIRGL_CAPSET_POLICY_FULL,
++    VIRGL_CAPSET_POLICY_SAFE,
++} VirglCapsetPolicy;
++
 +/* WINDOWS VIRGL FIX: Check renderer initialization before calling VirGL functions
-+ *
++ * 
 + * ROOT CAUSE: On Windows with WHPX accelerator, virglrenderer may fail to initialize,
 + * leaving function pointers like virgl_renderer_get_cap_set as NULL.
 + * Calling NULL function pointers causes crash (0xC0000005 Access Violation).
 + *
 + * FIX: Validate renderer initialization early with a static cache flag.
-+ * This is a true fix, not a workaround, because VirGL cannot work if initialization fails.
-+ * No performance impact: only a single NULL pointer check on first GPU capset query.
++ * This is a true fix (not workaround) because VirGL can't work if initialization fails.
++ * No performance impact - only a single NULL pointer check on first GPU capset query.
++ *
++ * Policy: QEMU_VIRGL_CAPSET_POLICY=auto|full|safe
++ * - auto (default): probe VIRGL2/VENUS capsets
++ * - full: identical to auto, kept for explicitness
++ * - safe: skip advanced capset probes and expose only base VIRGL capset
 + */
 +static int g_virgl_initialized = -1;  /* -1=unchecked, 0=failed, 1=success */
++static int g_virgl_capset_policy = -1;
++
++static VirglCapsetPolicy virtio_gpu_virgl_get_capset_policy(void)
++{
++    const char *policy;
++
++    if (g_virgl_capset_policy != -1) {
++        return g_virgl_capset_policy;
++    }
++
++    policy = g_getenv("QEMU_VIRGL_CAPSET_POLICY");
++    if (!policy || policy[0] == '\0' ||
++        g_ascii_strcasecmp(policy, "auto") == 0) {
++        g_virgl_capset_policy = VIRGL_CAPSET_POLICY_AUTO;
++    } else if (g_ascii_strcasecmp(policy, "full") == 0) {
++        g_virgl_capset_policy = VIRGL_CAPSET_POLICY_FULL;
++    } else if (g_ascii_strcasecmp(policy, "safe") == 0) {
++        g_virgl_capset_policy = VIRGL_CAPSET_POLICY_SAFE;
++    } else {
++        warn_report("virgl: invalid QEMU_VIRGL_CAPSET_POLICY='%s', using auto", policy);
++        g_virgl_capset_policy = VIRGL_CAPSET_POLICY_AUTO;
++    }
++
++    return g_virgl_capset_policy;
++}
 +
  GArray *virtio_gpu_virgl_get_capsets(VirtIOGPU *g)
  {
++    VirglCapsetPolicy policy;
      uint32_t capset_max_ver, capset_max_size;
      GArray *capset_ids;
  
-+    /* Validate VirGL renderer initialization on first call. */
++    /* Validate VirGL renderer initialization on first call */
 +    if (g_virgl_initialized == -1) {
 +        g_virgl_initialized = (virgl_renderer_get_cap_set != NULL) ? 1 : 0;
 +        if (g_virgl_initialized == 0) {
@@ -29,11 +68,21 @@
 +        }
 +    }
 +
-+    /* Skip capset queries if renderer initialization failed. */
++    /* Skip capset queries if renderer initialization failed */
 +    if (g_virgl_initialized == 0) {
 +        return g_array_new(false, false, sizeof(uint32_t));
 +    }
 +
      capset_ids = g_array_new(false, false, sizeof(uint32_t));
++    policy = virtio_gpu_virgl_get_capset_policy();
  
      /* VIRGL is always supported. */
+     virtio_gpu_virgl_add_capset(capset_ids, VIRTIO_GPU_CAPSET_VIRGL);
+ 
++    if (policy == VIRGL_CAPSET_POLICY_SAFE) {
++        return capset_ids;
++    }
++
+     virgl_renderer_get_cap_set(VIRTIO_GPU_CAPSET_VIRGL2,
+                                &capset_max_ver,
+                                &capset_max_size);

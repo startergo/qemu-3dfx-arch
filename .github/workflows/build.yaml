@@ -125,6 +125,7 @@ jobs:
         patch -p0 -i ../qemu-exp/qemu-windows-vss-mingw-fix.patch
         patch -p1 -i ../qemu-exp/qemu-sdl-clipboard.patch
         patch -p0 -i ../virgil3d/0001-Virgil3D-with-SDL2-OpenGL.patch
+        patch -p0 -i ../virgil3d/0002-Virgil3D-macOS-GLSL-version.patch
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
 
@@ -321,6 +322,7 @@ jobs:
         patch -p0 -i ../qemu-exp/qemu-windows-vss-mingw-fix.patch
         patch -p1 -i ../qemu-exp/qemu-sdl-clipboard.patch
         patch -p0 -i ../virgil3d/0001-Virgil3D-with-SDL2-OpenGL.patch
+        patch -p0 -i ../virgil3d/0002-Virgil3D-macOS-GLSL-version.patch
         echo "Signing commit id to src"
         bash ../scripts/sign_commit
 

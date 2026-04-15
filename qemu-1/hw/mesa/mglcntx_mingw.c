@@ -34,10 +34,12 @@
 #include <GL/wgl.h>
 #include "system/whpx.h"
 
+#ifdef CONFIG_WHPX
 static int bufo_accel_en(void)
 {
     return 1;
 }
+#endif
 int MGLUpdateGuestBufo(mapbufo_t *bufo, const int add)
 {
 #ifdef CONFIG_WHPX

@@ -57,6 +57,42 @@ Includes latest commit Windows Binaries and Wrappers (requires a GitHub Account)
 
 There are two ways to build this repo. While this is repo is used for Arch Linux, It can also build on other OS like Windows 10 with MSYS2 too.
 
+### Docker Way (Cross-build Windows binaries)
+
+This is the fastest way to produce a full Windows artifact bundle from Linux, macOS, or Windows with Docker.
+
+1. Build the Docker image:
+
+    git clone https://github.com/startergo/qemu-3dfx-arch.git
+    cd qemu-3dfx-arch
+    docker build \
+      --build-arg QEMU_REF=master \
+      --build-arg VIRGL_HELPER_REF=master \
+      --build-arg PRIMARY_PATCH=00-qemu110x-mesa-glide.patch \
+      --build-arg ENABLE_QEMU_EXP=1 \
+      -t qemu-3dfx-win-cross .
+
+2. Extract build output to local `output/`:
+
+    mkdir -p output
+    docker run --rm -v "$(pwd)/output:/mnt/output" qemu-3dfx-win-cross
+
+3. Use binaries from `output/bin`:
+
+    ./output/bin/qemu-system-x86_64w.exe --version
+    ./output/bin/qemu-img.exe --help
+
+Windows PowerShell extraction example:
+
+    mkdir output
+    docker run --rm -v "${PWD}\output:/mnt/output" qemu-3dfx-win-cross
+
+Notes:
+
+- The Docker image cross-compiles with mingw-w64 and installs into `/output` in the container.
+- The repository patch helper script is used during build: `scripts/apply_qemu_patches.sh`.
+- If you only want to build from GitHub Actions, use the `Build Docker Cross branch` workflow and download its artifact.
+
 ### Convenience Way
 
 This way is simple. Just download the PKGBUILD from GitHub. (Arch-Based distributions)

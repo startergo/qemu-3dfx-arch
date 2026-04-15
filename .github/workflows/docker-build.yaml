@@ -1,7 +1,10 @@
 name: Build Docker Cross branch
 
 on:
-  - workflow_dispatch
+  workflow_dispatch:
+  push:
+    branches:
+      - test-experiments
 
 jobs:
   docker-cross-windows:

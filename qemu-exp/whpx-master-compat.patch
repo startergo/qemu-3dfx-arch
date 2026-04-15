@@ -6,10 +6,10 @@ index 4529dc4..a05e738 100644
  
  bool whpx_allowed;
  bool whpx_irqchip_in_kernel;
-+
++void whpx_update_guest_pa_range(uint64_t start_pa, uint64_t size,
++                                void *host_va, int readonly, int add);
 +void whpx_update_guest_pa_range(uint64_t start_pa, uint64_t size,
 +                                void *host_va, int readonly, int add) {}
-+
 diff --git a/accel/whpx/whpx-common.c b/accel/whpx/whpx-common.c
 index b813a5d..a899cd5 100644
 --- a/accel/whpx/whpx-common.c

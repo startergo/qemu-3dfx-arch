@@ -79,7 +79,7 @@
    ui_modules += {'sdl' : sdl_ss}
 --- qemu-10.1.2/ui/sdl2.c	2025-10-20 15:44:01
 +++ qemu-10.1.2-patched/ui/sdl2.c	2025-11-26 09:07:45
-@@ -616,12 +616,18 @@
+@@ -616,13 +616,19 @@
           * key is released.
           */
          scon->ignore_hotkeys = get_mod_state();
@@ -88,7 +88,8 @@
 +#endif
          break;
      case SDL_WINDOWEVENT_FOCUS_LOST:
-         if (gui_grab && !gui_fullscreen) {
+         if (!fxui_focus_lost() && gui_grab && !gui_fullscreen) {
+             fxui_grab_val(0x80 | gui_grab);
              sdl_grab_end(scon);
          }
 +#ifdef CONFIG_SDL_CLIPBOARD

@@ -125,8 +125,7 @@ jobs:
         bash scripts/apply_qemu_patches.sh \
           --src-dir "${{ env.qemu_src_dir }}" \
           --primary-patch "${{ env.primary_patch }}" \
-          --with-qemu-exp \
-          --with-vss-fix
+          --with-qemu-exp
 
      - name: Build local virglrenderer package
        shell: msys2 {0}
@@ -321,8 +320,7 @@ jobs:
         bash scripts/apply_qemu_patches.sh \
           --src-dir "${{ env.qemu_src_dir }}" \
           --primary-patch "${{ env.primary_patch }}" \
-          --with-qemu-exp \
-          --with-vss-fix
+          --with-qemu-exp
 
     - name: Build local virglrenderer package
       shell: msys2 {0}

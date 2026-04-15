@@ -1,0 +1,31 @@
+name: Build Docker Cross branch
+
+on:
+  - workflow_dispatch
+
+jobs:
+  docker-cross-windows:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: |
+        docker build \
+          --build-arg QEMU_REF=master \
+          --build-arg VIRGL_HELPER_REF=master \
+          --build-arg PRIMARY_PATCH=00-qemu110x-mesa-glide.patch \
+          --build-arg ENABLE_QEMU_EXP=1 \
+          -t qemu-3dfx-win-cross .
+
+    - name: Extract build output
+      run: |
+        mkdir -p output
+        docker run --rm -v "${PWD}/output:/mnt/output" qemu-3dfx-win-cross
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: bin-windows-docker-head-artifact
+        path: ./output

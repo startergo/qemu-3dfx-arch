@@ -10,12 +10,14 @@
  #include "ui/kbd-state.h"
  #ifdef CONFIG_OPENGL
  # include "ui/egl-helpers.h"
-@@ -46,3 +46,6 @@
+@@ -45,5 +48,8 @@
+     bool gui_keysym;
      SDL_GLContext winctx;
      QKbdState *kbd;
 +#ifdef CONFIG_SDL_CLIPBOARD
 +    QemuClipboardPeer cbpeer;
 +#endif
+     bool has_dmabuf;
  #ifdef CONFIG_OPENGL
 @@ -97,4 +105,11 @@
  void sdl2_gl_scanout_flush(DisplayChangeListener *dcl,
@@ -77,7 +79,7 @@
    ui_modules += {'sdl' : sdl_ss}
 --- qemu-10.1.2/ui/sdl2.c	2025-10-20 15:44:01
 +++ qemu-10.1.2-patched/ui/sdl2.c	2025-11-26 09:07:45
-@@ -616,13 +616,19 @@
+@@ -616,12 +616,18 @@
           * key is released.
           */
          scon->ignore_hotkeys = get_mod_state();
@@ -86,8 +88,7 @@
 +#endif
          break;
      case SDL_WINDOWEVENT_FOCUS_LOST:
-         if (!fxui_focus_lost() && gui_grab && !gui_fullscreen) {
-             fxui_grab_val(0x80 | gui_grab);
+         if (gui_grab && !gui_fullscreen) {
              sdl_grab_end(scon);
          }
 +#ifdef CONFIG_SDL_CLIPBOARD
@@ -101,7 +102,7 @@
          case SDL_WINDOWEVENT:
              handle_windowevent(ev);
              break;
-+#if defined(CONFIG_SDL_CLIPBOARD) && defined(SDL_CLIPBOARDUPDATE)
++#ifdef CONFIG_SDL_CLIPBOARD
 +        case SDL_CLIPBOARDUPDATE:
 +            sdl2_clipboard_handle_request(scon);
 +            break;
@@ -142,7 +143,7 @@
 +
 +#define SDL_CLIPBOARD_DEBUG 0
 +#if SDL_CLIPBOARD_DEBUG
-+#define DPRINTF(fmt, ...) error_report("" fmt, ##__VA_ARGS__)
++#define DPRINTF(fmt, ...) DPRINTF("" fmt, ##__VA_ARGS__)
 +#else
 +#define DPRINTF(fmt, ...) do {} while (0)
 +#endif
@@ -184,17 +185,17 @@
 + * While set, host clipboard pushes are suppressed to prevent the startup
 + * SDL_CLIPBOARDUPDATE from forwarding a stale GRAB to spice-vdagent before
 + * the channel stabilises.  That stale GRAB causes spice-vdagent to release
-+ * X11 CLIPBOARD, permanently breaking subsequent guest→host transfers.
++ * X11 CLIPBOARD, permanently breaking subsequent guest?host transfers.
 + *
 + * Cleared on any guest clipboard notification (even a failed one) so that
-+ * host→guest still works when spice-vdagent cannot serve guest data (e.g.
++ * host?guest still works when spice-vdagent cannot serve guest data (e.g.
 + * KDE Wayland where the Mutter DBUS API is unavailable).
 + */
 +static bool settling = true;
 +
 +/*
-+ * Monotonic time (µs) after which settling clears automatically.
-+ * Set on each RESET_SERIAL; expires 5 s later so host→guest works even
++ * Monotonic time (?s) after which settling clears automatically.
++ * Set on each RESET_SERIAL; expires 5 s later so host?guest works even
 + * when spice-vdagent is absent or cannot announce a clipboard GRAB
 + * (e.g. KDE Wayland where Mutter DBUS is unavailable).
 + */
@@ -241,7 +242,7 @@
 +        if (!notify->info->types[QEMU_CLIPBOARD_TYPE_TEXT].data) {
 +            if (guest_clipboard_pending) {
 +                DPRINTF("notify UPDATE_INFO data not ready, "
-+                            "already pending — skipping duplicate request");
++                            "already pending ? skipping duplicate request");
 +                return;
 +            }
 +            DPRINTF("notify UPDATE_INFO data not ready, "
@@ -438,10 +439,12 @@ diff --git a/ui/vdagent.c b/ui/vdagent.c
 index bb0c4aa..6369cd8 100644
 --- a/ui/vdagent.c
 +++ b/ui/vdagent.c
-@@ -200,3 +200,4 @@ static void vdagent_send_caps(VDAgentChardev *vd, bool request)
- #if CHECK_SPICE_PROTOCOL_VERSION(0, 14, 1)
-     caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL);
+@@ -192,6 +192,7 @@ static void vdagent_send_caps(VDAgentChardev *vd, bool request)
+         caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_BY_DEMAND);
+         caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_SELECTION);
+         caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL);
 +        caps->caps[0] |= (1 << VD_AGENT_CAP_CLIPBOARD_NO_RELEASE_ON_REGRAB);
- #endif
-
+     }
+ 
+     caps->request = request;
 

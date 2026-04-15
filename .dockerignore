@@ -1,0 +1,12 @@
+.git
+.github
+build
+install_dir
+patch-gen
+patch-test
+patch-test-single
+clean-single
+clean-test
+qemu-10.2.2
+qemu-10.2.2.clean.tar.xz
+bin

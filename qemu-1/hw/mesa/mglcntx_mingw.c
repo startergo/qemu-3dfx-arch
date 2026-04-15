@@ -40,6 +40,7 @@ static int bufo_accel_en(void)
 }
 int MGLUpdateGuestBufo(mapbufo_t *bufo, const int add)
 {
+#ifdef CONFIG_WHPX
     int ret = (GetBufOAccelEN()
             || (bufo_accel_en() &&
                 (bufo && bufo->tgt == GL_PIXEL_UNPACK_BUFFER))
@@ -54,6 +55,9 @@ int MGLUpdateGuestBufo(mapbufo_t *bufo, const int add)
     }
 
     return ret;
+#else
+    return 0;
+#endif
 }
 
 static LONG WINAPI MGLWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

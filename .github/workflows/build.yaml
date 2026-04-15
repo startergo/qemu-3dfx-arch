@@ -13,8 +13,10 @@ jobs:
    
      runs-on: windows-latest      
      env:
-      pkgver: '10.2.2'
-      patch:  '00-qemu110x-mesa-glide.patch'
+      buildver: 'head-da6c4fe'
+      qemu_ref: 'da6c4fe60fee30dd77267764d55b38af9cb89d4b'
+      qemu_src_dir: 'qemu-head'
+      primary_patch: '00-qemu110x-mesa-glide.patch'
       mspkg: 'mingw-w64-x86_64'
       branch: ${{ github.ref_name }}
       
@@ -105,30 +107,26 @@ jobs:
           ${{ env.mspkg }}-zlib
           ${{ env.mspkg }}-zstd
           
-     - name: Extracting build
+     - name: Fetching QEMU source
        continue-on-error: true
        shell: msys2 {0}
        run:  |
-        echo "Downloading src"
-        wget -q https://download.qemu.org/qemu-${{ env.pkgver }}.tar.xz
-        echo "Extracting src"
-        bsdtar -xf "qemu-${{ env.pkgver }}.tar.xz" 2>/dev/null || bsdtar -xf "qemu-${{ env.pkgver }}.tar.xz"
+        echo "Cloning QEMU source"
+        git clone --depth 1 https://github.com/qemu/qemu.git "${{ env.qemu_src_dir }}"
+        cd "${{ env.qemu_src_dir }}"
+        git fetch --depth 1 origin "${{ env.qemu_ref }}"
+        git checkout "${{ env.qemu_ref }}"
+        echo "Pinned QEMU commit: $(git rev-parse --short HEAD)"
 
      - name: Patching build
        shell: msys2 {0}
        run:  |
-        echo "Adding files to src"
-        rsync -rv qemu-0/hw/3dfx qemu-1/hw/mesa qemu-${{ env.pkgver }}/hw/
-        cd qemu-${{ env.pkgver }}
-        echo "Patching files to src"
-        patch -p0 -i ../${{ env.patch }}
-        patch -p0 -i ../qemu-exp/qemu-windows-vss-mingw-fix.patch
-        patch -p1 -i ../qemu-exp/windows-virgl-fix.patch
-        patch -p1 -i ../qemu-exp/qemu-sdl-clipboard.patch
-        patch -p0 -i ../virgil3d/0001-Virgil3D-with-SDL2-OpenGL.patch
-        patch -p0 -i ../virgil3d/0002-Virgil3D-macOS-GLSL-version.patch
-        echo "Signing commit id to src"
-        bash ../scripts/sign_commit
+        echo "Applying qemu-3dfx patch stack"
+        bash scripts/apply_qemu_patches.sh \
+          --src-dir "${{ env.qemu_src_dir }}" \
+          --primary-patch "${{ env.primary_patch }}" \
+          --with-qemu-exp \
+          --with-vss-fix
 
      - name: Build local virglrenderer package
        shell: msys2 {0}
@@ -151,8 +149,8 @@ jobs:
         CFLAGS="${CFLAGS//-flto=auto/}"
         CXXFLAGS="${CXXFLAGS//-flto=auto/}"
         LDFLAGS="${LDFLAGS//-flto=auto/}"
-        sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../qemu-${{ env.pkgver }}/meson.build
-        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=x86-64-v2 -mtune=generic -O3" --extra-ldflags="-Wl,--disable-runtime-pseudo-reloc -Wl,--disable-high-entropy-va"
+        sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../${{ env.qemu_src_dir }}/meson.build
+        ../${{ env.qemu_src_dir }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=x86-64-v2 -mtune=generic -O3" --extra-ldflags="-Wl,--disable-runtime-pseudo-reloc -Wl,--disable-high-entropy-va"
 
      - name: Compile build
        working-directory: ./build
@@ -195,7 +193,7 @@ jobs:
         =================================================
         GitHub Actions Artifact Build
         ${{ env.branch }} Branch
-        Version ${{ env.pkgver }}
+        Version ${{ env.buildver }}
         Built using ${MSYSTEM} 
         EOF
         unix2dos version.txt build-timestamp.txt
@@ -204,15 +202,17 @@ jobs:
      - name: Uploading build
        uses: actions/upload-artifact@v4
        with:
-        name: bin-windows-mingw64-${{ env.pkgver }}-artifact
+        name: bin-windows-mingw64-${{ env.buildver }}-artifact
         path: ./install_dir
 
    UCRT64-Windows:
 
     runs-on: windows-latest
     env:
-      pkgver: '10.2.2'
-      patch:  '00-qemu110x-mesa-glide.patch'
+      buildver: 'head-da6c4fe'
+      qemu_ref: 'da6c4fe60fee30dd77267764d55b38af9cb89d4b'
+      qemu_src_dir: 'qemu-head'
+      primary_patch: '00-qemu110x-mesa-glide.patch'
       mspkg: 'mingw-w64-ucrt-x86_64'
       branch: ${{ github.ref_name }}
 
@@ -303,30 +303,26 @@ jobs:
           ${{ env.mspkg }}-zlib
           ${{ env.mspkg }}-zstd
 
-    - name: Extracting build
+    - name: Fetching QEMU source
       continue-on-error: true
       shell: msys2 {0}
       run:  |
-        echo "Downloading src"
-        wget -q https://download.qemu.org/qemu-${{ env.pkgver }}.tar.xz
-        echo "Extracting src"
-        bsdtar -xf "qemu-${{ env.pkgver }}.tar.xz" 2>/dev/null || bsdtar -xf "qemu-${{ env.pkgver }}.tar.xz"
+        echo "Cloning QEMU source"
+        git clone --depth 1 https://github.com/qemu/qemu.git "${{ env.qemu_src_dir }}"
+        cd "${{ env.qemu_src_dir }}"
+        git fetch --depth 1 origin "${{ env.qemu_ref }}"
+        git checkout "${{ env.qemu_ref }}"
+        echo "Pinned QEMU commit: $(git rev-parse --short HEAD)"
 
     - name: Patching build
       shell: msys2 {0}
       run:  |
-        echo "Adding files to src"
-        rsync -rv qemu-0/hw/3dfx qemu-1/hw/mesa qemu-${{ env.pkgver }}/hw/
-        cd qemu-${{ env.pkgver }}
-        echo "Patching files to src"
-        patch -p0 -i ../${{ env.patch }}
-        patch -p0 -i ../qemu-exp/qemu-windows-vss-mingw-fix.patch
-        patch -p1 -i ../qemu-exp/qemu-sdl-clipboard.patch
-        patch -p0 -i ../virgil3d/0001-Virgil3D-with-SDL2-OpenGL.patch
-        patch -p0 -i ../virgil3d/0002-Virgil3D-macOS-GLSL-version.patch
-        patch -p1 -i ../qemu-exp/windows-virgl-fix.patch
-        echo "Signing commit id to src"
-        bash ../scripts/sign_commit
+        echo "Applying qemu-3dfx patch stack"
+        bash scripts/apply_qemu_patches.sh \
+          --src-dir "${{ env.qemu_src_dir }}" \
+          --primary-patch "${{ env.primary_patch }}" \
+          --with-qemu-exp \
+          --with-vss-fix
 
     - name: Build local virglrenderer package
       shell: msys2 {0}
@@ -349,8 +345,8 @@ jobs:
         CFLAGS="${CFLAGS//-flto=auto/}"
         CXXFLAGS="${CXXFLAGS//-flto=auto/}"
         LDFLAGS="${LDFLAGS//-flto=auto/}"
-        sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../qemu-${{ env.pkgver }}/meson.build
-        ../qemu-${{ env.pkgver }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=x86-64-v2 -mtune=generic -O3" --extra-ldflags="-Wl,--disable-runtime-pseudo-reloc -Wl,--disable-high-entropy-va"
+        sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../${{ env.qemu_src_dir }}/meson.build
+        ../${{ env.qemu_src_dir }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --prefix=$(pwd)/../install_dir --extra-cflags="-march=x86-64-v2 -mtune=generic -O3" --extra-ldflags="-Wl,--disable-runtime-pseudo-reloc -Wl,--disable-high-entropy-va"
 
     - name: Compile build
       working-directory: ./build
@@ -393,7 +389,7 @@ jobs:
         =================================================
         GitHub Actions Artifact Build
         ${{ env.branch }} Branch
-        Version ${{ env.pkgver }}
+        Version ${{ env.buildver }}
         Built using ${MSYSTEM} 
         EOF
         unix2dos version.txt build-timestamp.txt 
@@ -402,7 +398,7 @@ jobs:
     - name: Uploading build
       uses: actions/upload-artifact@v4
       with:
-        name: bin-windows-ucrt64-${{ env.pkgver }}-artifact
+        name: bin-windows-ucrt64-${{ env.buildver }}-artifact
         path: ./install_dir
 
 

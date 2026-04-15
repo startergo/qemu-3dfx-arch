@@ -19,7 +19,7 @@
  */
 
 #include "qemu/osdep.h"
-#include "hw/sysbus.h"
+#include "hw/core/sysbus.h"
 #include "hw/i386/pc.h"
 #include "system/address-spaces.h"
 

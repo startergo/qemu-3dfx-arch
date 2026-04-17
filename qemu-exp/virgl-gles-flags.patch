@@ -2,20 +2,22 @@ diff --git a/hw/display/virtio-gpu-virgl.c b/hw/display/virtio-gpu-virgl.c
 index 07f6355ad6..8c58f6ef2a 100644
 --- a/hw/display/virtio-gpu-virgl.c
 +++ b/hw/display/virtio-gpu-virgl.c
-@@ -1435,13 +1435,27 @@ static int virtio_gpu_virgl_init(VirtIOGPU *g)
+@@ -1435,13 +1435,28 @@ static int virtio_gpu_virgl_init(VirtIOGPU *g)
  
  #if VIRGL_RENDERER_CALLBACKS_VERSION >= 4
 +    /*
-+     * Ensure virglrenderer gets backend flags early enough at init time.
-+     * qemu_egl_mode has not been finalized yet at renderer init time.
++     * On Windows, ANGLE provides GLES but not a real EGL display, so only
++     * USE_GLES is set. On Linux/EGL, both USE_EGL and USE_GLES are set.
 +     */
 +#ifdef WIN32
-+    flags |= VIRGL_RENDERER_USE_GLES;
-+#elif defined(__APPLE__)
-+    /* macOS has no native EGL path here; do not force EGL/GLES. */
-+#else
-+    flags |= VIRGL_RENDERER_USE_EGL;
 +    if (qemu_egl_mode == DISPLAY_GL_MODE_ES) {
++        flags |= VIRGL_RENDERER_USE_GLES;
++    }
++#elif defined(__APPLE__)
++    /* macOS has no native EGL; do not force EGL/GLES flags. */
++#else
++    if (qemu_egl_mode == DISPLAY_GL_MODE_ES) {
++        flags |= VIRGL_RENDERER_USE_EGL;
 +        flags |= VIRGL_RENDERER_USE_GLES;
 +    }
 +#endif

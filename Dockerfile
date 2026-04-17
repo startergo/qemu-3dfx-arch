@@ -43,6 +43,8 @@ RUN --mount=type=cache,target=/var/cache/dnf \
         mingw64-openssl \
         mingw64-opus \
         mingw64-pixman \
+        mingw64-vulkan-headers \
+        mingw64-vulkan-loader \
         mingw64-xz \
         mingw64-zlib \
         ninja-build \
@@ -66,10 +68,16 @@ RUN git clone ${VIRGL_HELPER_REPO} /virgl-helper && \
 
 COPY . /src/
 
-RUN cp -r /virgl-helper/angle/include/* /usr/x86_64-w64-mingw32/sys-root/mingw/include/ && \
-    cp /virgl-helper/angle/egl.pc /usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig/ && \
-    cp /virgl-helper/angle/glesv2.pc /usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig/ && \
-    cp /virgl-helper/WinHv*.h /usr/x86_64-w64-mingw32/sys-root/mingw/include/
+RUN angle_include=/usr/x86_64-w64-mingw32/sys-root/mingw/include && \
+    angle_pkgconfig=/usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig && \
+    cp -r /virgl-helper/angle/include/* ${angle_include}/ && \
+    cp /virgl-helper/angle/egl.pc ${angle_pkgconfig}/ && \
+    cp /virgl-helper/angle/glesv2.pc ${angle_pkgconfig}/ && \
+    cp /virgl-helper/WinHv*.h ${angle_include}/ && \
+    test -f ${angle_include}/EGL/egl.h && \
+    test -f ${angle_include}/GLES2/gl2.h && \
+    test -f ${angle_include}/KHR/khrplatform.h && \
+    test -f ${angle_include}/angle_gl.h
 
 RUN git clone https://github.com/anholt/libepoxy.git /libepoxy && \
     cd /libepoxy && \
@@ -120,7 +128,20 @@ RUN git clone --depth=1 https://gitlab.freedesktop.org/virgl/virglrenderer.git /
     cd /virglrenderer && \
     patch -p2 < /virgl-helper/patches/0001-Virglrenderer-on-Windows-and-macOS.patch && \
     patch -p1 < /src/virgil3d/MINGW-packages/0002-virglrenderer-angle-gles-fixes.patch && \
-    mingw64-meson build/ -Dplatforms=egl -Dminigbm_allocation=false && \
+    angle_include=/usr/x86_64-w64-mingw32/sys-root/mingw/include && \
+    combined_pc_path=/usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig && \
+    mingw64-meson build/ \
+        --buildtype=debug \
+        -Dc_args=-I${angle_include} \
+        -Dcpp_args=-I${angle_include} \
+        --pkg-config-path=${combined_pc_path} \
+        -Ddrm-renderers=[] \
+        -Dvenus=true \
+        -Dtests=false \
+        -Dvideo=false \
+        -Dtracing=none \
+        -Dplatforms=egl \
+        -Dminigbm_allocation=false && \
     ninja -C build -j${BUILD_JOBS} && \
     ninja -C build install
 

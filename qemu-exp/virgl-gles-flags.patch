@@ -1,15 +1,26 @@
 diff --git a/hw/display/virtio-gpu-virgl.c b/hw/display/virtio-gpu-virgl.c
-index 07f6355ad6..c0f2c8eaa5 100644
+index 07f6355ad6..4d5c61bc85 100644
 --- a/hw/display/virtio-gpu-virgl.c
 +++ b/hw/display/virtio-gpu-virgl.c
-@@ -1437,6 +1437,10 @@ static int virtio_gpu_virgl_init(VirtIOGPU *g)
+@@ -1435,13 +1435,20 @@ static int virtio_gpu_virgl_init(VirtIOGPU *g)
+ 
  #if VIRGL_RENDERER_CALLBACKS_VERSION >= 4
-     if (qemu_egl_display) {
-         virtio_gpu_3d_cbs.version = 4;
+-    if (qemu_egl_display) {
++    if (qemu_egl_mode != DISPLAY_GL_MODE_OFF) {
 +        flags |= VIRGL_RENDERER_USE_EGL;
 +        if (qemu_egl_mode == DISPLAY_GL_MODE_ES) {
 +            flags |= VIRGL_RENDERER_USE_GLES;
 +        }
++    }
++
++    if (qemu_egl_display) {
+         virtio_gpu_3d_cbs.version = 4;
          virtio_gpu_3d_cbs.get_egl_display = virgl_get_egl_display;
  #if VIRGL_CHECK_VERSION(1, 1, 2)
          virtio_gpu_3d_cbs.write_fence         = virgl_write_async_fence;
+         virtio_gpu_3d_cbs.write_context_fence = virgl_write_async_context_fence;
+         flags |= VIRGL_RENDERER_ASYNC_FENCE_CB;
+         flags |= VIRGL_RENDERER_THREAD_SYNC;
+ #endif
+     }
+ #endif

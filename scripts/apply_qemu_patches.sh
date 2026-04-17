@@ -109,7 +109,12 @@ if [[ $with_qemu_exp -eq 1 ]]; then
 
     if ! git apply "$repo_root/qemu-exp/virgl-gles-flags.patch" 2>/dev/null; then
         echo "virgl GLES flags patch failed with git apply, trying with patch utility"
-        patch -p1 -i "$repo_root/qemu-exp/virgl-gles-flags.patch"
+        if ! patch -p1 -i "$repo_root/qemu-exp/virgl-gles-flags.patch"; then
+            echo "ERROR: virgl GLES flags patch failed to apply!" >&2
+            exit 1
+        fi
+    else
+        echo "virgl GLES flags patch applied successfully"
     fi
 fi
 

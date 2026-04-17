@@ -106,6 +106,11 @@ if [[ $with_qemu_exp -eq 1 ]]; then
         echo "Clipboard patch failed with git apply, trying with patch utility"
         patch -p1 -i "$repo_root/qemu-exp/qemu-sdl-clipboard.patch" || true
     fi
+
+    if ! git apply "$repo_root/qemu-exp/virgl-gles-flags.patch" 2>/dev/null; then
+        echo "virgl GLES flags patch failed with git apply, trying with patch utility"
+        patch -p1 -i "$repo_root/qemu-exp/virgl-gles-flags.patch"
+    fi
 fi
 
 echo "Applying virgil3d patches"

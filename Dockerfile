@@ -10,6 +10,7 @@ ARG VIRGL_HELPER_REPO=https://github.com/startergo/qemu-virgl-winhost.git
 ARG VIRGL_HELPER_REF=master
 ARG PRIMARY_PATCH=00-qemu110x-mesa-glide.patch
 ARG ENABLE_QEMU_EXP=1
+ARG VIRGL_VENUS=false
 
 ENV OUTPUT_DIR=${OUTPUT_DIR}
 ENV BUILD_JOBS=${BUILD_JOBS}
@@ -136,7 +137,7 @@ RUN git clone --depth=1 https://gitlab.freedesktop.org/virgl/virglrenderer.git /
         -Dcpp_args=-I${angle_include} \
         --pkg-config-path=${combined_pc_path} \
         -Ddrm-renderers=[] \
-        -Dvenus=true \
+        -Dvenus=${VIRGL_VENUS} \
         -Dtests=false \
         -Dvideo=false \
         -Dtracing=none \

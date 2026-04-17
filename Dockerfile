@@ -11,6 +11,7 @@ ARG VIRGL_HELPER_REF=master
 ARG PRIMARY_PATCH=00-qemu110x-mesa-glide.patch
 ARG ENABLE_QEMU_EXP=1
 ARG VIRGL_VENUS=false
+ARG VIRGL_BUILDTYPE=release
 
 ENV OUTPUT_DIR=${OUTPUT_DIR}
 ENV BUILD_JOBS=${BUILD_JOBS}
@@ -132,7 +133,7 @@ RUN git clone --depth=1 https://gitlab.freedesktop.org/virgl/virglrenderer.git /
     angle_include=/usr/x86_64-w64-mingw32/sys-root/mingw/include && \
     combined_pc_path=/usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig && \
     mingw64-meson build/ \
-        --buildtype=debug \
+        --buildtype=${VIRGL_BUILDTYPE} \
         -Dc_args=-I${angle_include} \
         -Dcpp_args=-I${angle_include} \
         --pkg-config-path=${combined_pc_path} \

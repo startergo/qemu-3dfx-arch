@@ -76,7 +76,7 @@ index 8184650..c477dc4 100644
 +      {
 +         if (vasprintf(&str, fmt, va) < 0)
 +            return;
-+         virgl_default_logger(log_level, str, virgl_log_data.log_priv);
++         virgl_default_logger(log_level, str, virgl_log_data.user_data);
 +         free(str);
 +         return;
 +      }
@@ -87,7 +87,7 @@ index 8184650..c477dc4 100644
     if (vasprintf(&str, fmt, va) < 0)
        return;
  
-    virgl_log_data.log_cb(log_level, str, virgl_log_data.log_priv);
+    virgl_log_data.log_cb(log_level, str, virgl_log_data.user_data);
     free(str);
  }
  

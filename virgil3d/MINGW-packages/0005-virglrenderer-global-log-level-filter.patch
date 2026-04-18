@@ -65,18 +65,29 @@ index 8184650..c477dc4 100644
     fprintf(fp, "%s", message);
     fflush(fp);
  }
-@@ -241,9 +242,14 @@ void virgl_logv(enum virgl_log_level_flags log_level, const char *fmt, va_list v
+@@ -241,9 +242,20 @@ void virgl_logv(enum virgl_log_level_flags log_level, const char *fmt, va_list v
  {
     char *str = NULL;
  
 +   virgl_init_log_level();
 +
     if (!virgl_log_data.log_cb)
-       return;
+-      return;
++      {
++         if (vasprintf(&str, fmt, va) < 0)
++            return;
++         virgl_default_logger(log_level, str, virgl_log_data.log_priv);
++         free(str);
++         return;
++      }
  
 +   if (log_level < virgl_log_level)
 +      return;
 +
     if (vasprintf(&str, fmt, va) < 0)
        return;
+ 
+    virgl_log_data.log_cb(log_level, str, virgl_log_data.log_priv);
+    free(str);
+ }
  

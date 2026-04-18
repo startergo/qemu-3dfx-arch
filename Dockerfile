@@ -158,7 +158,6 @@ RUN --mount=type=cache,target=/root/.cargo/registry \
     fi && \
     export NOCONFIGURE=1 && \
     export MESON=/usr/local/bin/meson && \
-    sed -i 's/SDL_HINT_ANGLE_BACKEND/"SDL_ANGLE_BACKEND"/g; s/SDL_HINT_ANGLE_FAST_PATH/"SDL_ANGLE_FAST_PATH"/g' /qemu/ui/sdl2.c && \
     ./configure \
         --target-list=x86_64-softmmu,i386-softmmu \
         --prefix="${OUTPUT_DIR}" \

@@ -27,6 +27,24 @@ patch_input() {
     fi
 }
 
+vss_fix_already_upstream() {
+    grep -q "CONFIG_CONVERT_STRING_TO_BSTR" qga/vss-win32/install.cpp && \
+    grep -q "int qemu_ftruncate64(int fd, int64_t length)" util/oslib-win32.c && \
+    ! grep -q "int qemu_ftruncate64(int fd, int64_t length)" block/file-win32.c
+}
+
+vss_fix_report_markers() {
+    local bfile_marker="absent"
+    if grep -q "int qemu_ftruncate64(int fd, int64_t length)" block/file-win32.c; then
+        bfile_marker="present"
+    fi
+
+    echo "VSS upstream markers detected:" \
+         "install.cpp:CONFIG_CONVERT_STRING_TO_BSTR="$(grep -n "CONFIG_CONVERT_STRING_TO_BSTR" qga/vss-win32/install.cpp | head -1) \
+         "util/oslib-win32.c:qemu_ftruncate64="$(grep -n "int qemu_ftruncate64(int fd, int64_t length)" util/oslib-win32.c | head -1) \
+         "block/file-win32.c:qemu_ftruncate64=${bfile_marker}"
+}
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --src-dir)
@@ -99,13 +117,30 @@ fi
 if [[ $with_qemu_exp -eq 1 ]]; then
     echo "Applying qemu-exp patches"
     if [[ $with_vss_fix -eq 1 ]]; then
-        patch -p0 -i "$repo_root/qemu-exp/qemu-windows-vss-mingw-fix.patch"
+        if vss_fix_already_upstream; then
+            vss_fix_report_markers
+            echo "Skipping legacy VSS patch (equivalent behavior already in tree)"
+        elif ! patch --batch -p0 -i "$repo_root/qemu-exp/qemu-windows-vss-mingw-fix.patch"; then
+            echo "VSS fix patch did not apply cleanly; checking for upstream-equivalent changes"
+
+            rm -f qga/vss-win32/install.cpp.rej block/file-win32.c.rej util/oslib-win32.c.rej
+
+            if vss_fix_already_upstream; then
+                vss_fix_report_markers
+                echo "Continuing: legacy VSS patch content is already upstream-equivalent"
+            else
+                echo "VSS fix patch failed and equivalent upstream changes were not detected" >&2
+                exit 1
+            fi
+        fi
     fi
     # clipboard patch may need offsets due to primary patch modifying same files
     if ! git apply "$repo_root/qemu-exp/qemu-sdl-clipboard.patch" 2>/dev/null; then
         echo "Clipboard patch failed with git apply, trying with patch utility"
         patch -p1 -i "$repo_root/qemu-exp/qemu-sdl-clipboard.patch" || true
     fi
+    git apply "$repo_root/qemu-exp/qemu-egl-helpers-drm-guard.patch"
+    git apply "$repo_root/qemu-exp/qemu-sdl-gles-angle.patch"
 
 fi
 

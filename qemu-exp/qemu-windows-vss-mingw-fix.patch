@@ -10,10 +10,10 @@ diff -Nru ../orig/qemu-10.1.0/qga/vss-win32/install.cpp ./qga/vss-win32/install.
 +#if !defined(__MINGW64_VERSION_MAJOR) || __MINGW64_VERSION_MAJOR < 14 /* Support function to convert ASCII string into BSTR (used in _bstr_t) */
  namespace _com_util
  {
-     BSTR WINAPI ConvertStringToBSTR(const char *ascii) {
+	 BSTR WINAPI ConvertStringToBSTR(const char *ascii) {
 @@ -566,6 +566,7 @@
-         return bstr;
-     }
+		 return bstr;
+	 }
  }
 +#endif /* __MINGW64_VERSION_MAJOR < 14 */
  
@@ -94,4 +94,4 @@ diff -Nru ../orig/qemu-10.2.2/block/file-win32.c ./block/file-win32.c
 -
  static int set_sparse(int fd)
  {
-     DWORD returned;
+	 DWORD returned;

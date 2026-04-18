@@ -1,0 +1,12 @@
+--- a/ui/egl-helpers.c
++++ b/ui/egl-helpers.c
+@@ -26,6 +26,8 @@
+ #include "qemu/osdep.h"
+
+-#include "qemu/drm.h"
++#ifdef CONFIG_GBM
++#include "qemu/drm.h"
++#endif
+ #include "qemu/error-report.h"
+ #include "ui/console.h"
+ #include "ui/egl-helpers.h"

@@ -3,7 +3,9 @@
 This folder is where i put the patches that are meant to be unstable yet helpful and may contains features that are locked behind donations or my dumb ideas.
 
      SDL-Clipboard.patch              - SDL Clipboard support patch for QEMU version 10.0.x
-     qemu-windows-vss-mingw-fix.patch - Fixes compilation for MingGW-w64 version 14+ 
+     qemu-windows-vss-mingw-fix.patch - Fixes compilation for MingGW-w64 version 14+
+     qemu-egl-helpers-drm-guard.patch - Guard qemu/drm.h include with CONFIG_GBM (non-GBM builds)
+     qemu-sdl-gles-angle.patch        - GLES ES profile + ANGLE backend hints for SDL2 on MinGW32
 
 **Please use it with caution!**
 

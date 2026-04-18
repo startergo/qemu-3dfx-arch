@@ -21,7 +21,7 @@ source=("virglrenderer-$pkgver.tar.bz2::https://gitlab.freedesktop.org/virgl/vir
         "0001-Virglrenderer-on-Windows-and-macOS.patch")
 noextract=("virglrenderer-$pkgver.tar.bz2")
 sha256sums=('088040d130eaa0458a978fe7867fbfb1fcf1fdff52bf3b27a00658828bc4189f'
-            'af17d00914f1c7f65b4e9fdcb884b5cf5ca03faab9685f9bb6c5b84c091b56b2')
+            '51e8163e5f5e900cbb9003b355dfbc909efb8e2b642ec97bc380baa1fa20d076')
 
 prepare() {
   echo "Extracting virglrenderer-$pkgver.tar.bz2..."

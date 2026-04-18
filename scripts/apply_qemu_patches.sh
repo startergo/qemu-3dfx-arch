@@ -113,12 +113,8 @@ echo "Applying virgil3d patches"
 patch -p0 -i "$repo_root/virgil3d/0001-Virgil3D-with-SDL2-OpenGL.patch"
 patch -p0 -i "$repo_root/virgil3d/0002-Virgil3D-macOS-GLSL-version.patch"
 
-if git apply --check "$repo_root/qemu-exp/qemu-sdl-angle-hints-guard.patch" 2>/dev/null; then
-    echo "Applying QEMU SDL ANGLE compatibility patch"
-    git apply "$repo_root/qemu-exp/qemu-sdl-angle-hints-guard.patch"
-else
-    echo "Skipping QEMU SDL ANGLE compatibility patch; target hunk not present"
-fi
+echo "Applying QEMU SDL ANGLE macro compatibility fix"
+sed -i 's/SDL_HINT_ANGLE_BACKEND/"SDL_ANGLE_BACKEND"/g; s/SDL_HINT_ANGLE_FAST_PATH/"SDL_ANGLE_FAST_PATH"/g' ui/sdl2.c
 
 echo "Signing commit id to source tree"
 bash "$repo_root/scripts/sign_commit"

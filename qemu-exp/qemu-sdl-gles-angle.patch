@@ -1,6 +1,6 @@
 --- a/ui/sdl2.c
 +++ b/ui/sdl2.c
-@@ -99,5 +99,14 @@ void sdl2_window_create(struct sdl2_console *scon)
+@@ -99,5 +99,13 @@ void sdl2_window_create(struct sdl2_console *scon)
          if (scon->opts->gl == DISPLAY_GL_MODE_ES) {
              driver = "opengles2";
 +            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
@@ -8,10 +8,26 @@
 +#ifdef __MINGW32__
 +            SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
 +            SDL_SetHint("SDL_ANGLE_BACKEND", "d3d11");
-+            SDL_SetHint("SDL_ANGLE_FAST_PATH", "1");
 +            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 +            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 +#endif
          }
- 
+
          SDL_SetHint(SDL_HINT_RENDER_DRIVER, driver);
+@@ -110,4 +118,17 @@ void sdl2_window_create(struct sdl2_console *scon)
+         SDL_SetHint(SDL_HINT_RENDER_DRIVER, driver);
+         SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
+
+         scon->winctx = SDL_GL_CreateContext(scon->real_window);
++        if (!scon->winctx) {
++            error_report("SDL_GL_CreateContext failed (gl=%d): %s",
++                         scon->opts->gl, SDL_GetError());
++            exit(1);
++        }
++        if (SDL_GL_MakeCurrent(scon->real_window, scon->winctx) != 0) {
++            error_report("SDL_GL_MakeCurrent failed: %s", SDL_GetError());
++            exit(1);
++        }
+         SDL_GL_SetSwapInterval(0);
+     } else {
+         /* The SDL renderer is only used by sdl2-2D, when OpenGL is disabled */

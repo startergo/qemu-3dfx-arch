@@ -131,7 +131,7 @@ jobs:
        shell: msys2 {0}
        run: |
         cd virgil3d/MINGW-packages
-        dos2unix PKGBUILD
+        dos2unix PKGBUILD 000*.patch
         makepkg-mingw -sCLfc --noconfirm
         pacman -U --noconfirm mingw-w64-*.pkg.tar.zst
 
@@ -326,7 +326,7 @@ jobs:
       shell: msys2 {0}
       run: |
         cd virgil3d/MINGW-packages
-        dos2unix PKGBUILD
+        dos2unix PKGBUILD 000*.patch
         makepkg-mingw -sCLfc --noconfirm
         pacman -U --noconfirm mingw-w64-*.pkg.tar.zst
 

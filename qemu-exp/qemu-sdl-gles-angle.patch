@@ -1,10 +1,20 @@
 diff --git a/ui/sdl2.c b/ui/sdl2.c
-index aaaede5..8989037 100644
+index aaaede5..06f215c 100644
 --- a/ui/sdl2.c
 +++ b/ui/sdl2.c
-@@ -113,12 +113,29 @@ void sdl2_window_create(struct sdl2_console *scon)
+@@ -110,15 +110,44 @@ void sdl2_window_create(struct sdl2_console *scon)
+                                          flags);
+     if (scon->opengl) {
+         const char *driver = "opengl";
++        bool is_es = scon->opts->gl == DISPLAY_GL_MODE_ES;
  
-         if (scon->opts->gl == DISPLAY_GL_MODE_ES) {
+-        if (scon->opts->gl == DISPLAY_GL_MODE_ES) {
++        if (!scon->real_window) {
++            error_report("SDL_CreateWindow failed: %s", SDL_GetError());
++            exit(1);
++        }
++
++        if (is_es) {
              driver = "opengles2";
 +            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
 +                                SDL_GL_CONTEXT_PROFILE_ES);
@@ -20,6 +30,12 @@ index aaaede5..8989037 100644
          SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
  
          scon->winctx = SDL_GL_CreateContext(scon->real_window);
++        if (!scon->winctx && is_es) {
++            SDL_ClearError();
++            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
++            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
++            scon->winctx = SDL_GL_CreateContext(scon->real_window);
++        }
 +        if (!scon->winctx) {
 +            error_report("SDL_GL_CreateContext failed (gl=%d): %s",
 +                         scon->opts->gl, SDL_GetError());

@@ -1,6 +1,9 @@
+diff --git a/ui/sdl2.c b/ui/sdl2.c
+index aaaede5..8989037 100644
 --- a/ui/sdl2.c
 +++ b/ui/sdl2.c
-@@ -99,5 +99,13 @@ void sdl2_window_create(struct sdl2_console *scon)
+@@ -113,12 +113,29 @@ void sdl2_window_create(struct sdl2_console *scon)
+ 
          if (scon->opts->gl == DISPLAY_GL_MODE_ES) {
              driver = "opengles2";
 +            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
@@ -12,12 +15,10 @@
 +            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 +#endif
          }
-
-         SDL_SetHint(SDL_HINT_RENDER_DRIVER, driver);
-@@ -110,4 +118,17 @@ void sdl2_window_create(struct sdl2_console *scon)
+ 
          SDL_SetHint(SDL_HINT_RENDER_DRIVER, driver);
          SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
-
+ 
          scon->winctx = SDL_GL_CreateContext(scon->real_window);
 +        if (!scon->winctx) {
 +            error_report("SDL_GL_CreateContext failed (gl=%d): %s",

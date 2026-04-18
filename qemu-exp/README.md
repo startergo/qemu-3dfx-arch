@@ -3,6 +3,7 @@
 This folder is where i put the patches that are meant to be unstable yet helpful and may contains features that are locked behind donations or my dumb ideas.
 
      SDL-Clipboard.patch              - SDL Clipboard support patch for QEMU version 10.0.x
+     qemu-sdl-angle-hints-guard.patch - Guards optional SDL ANGLE hint macros for MinGW/ANGLE builds
      qemu-windows-vss-mingw-fix.patch - Fixes compilation for MingGW-w64 version 14+ 
 
 **Please use it with caution!**

@@ -151,8 +151,6 @@ RUN --mount=type=cache,target=/root/.cargo/registry \
     git clone ${QEMU_REPO} /qemu && \
     cd /qemu && \
     git checkout ${QEMU_REF} && \
-    sed -i 's/SDL_SetHint(SDL_HINT_ANGLE_BACKEND, "d3d11");/#ifdef SDL_HINT_ANGLE_BACKEND\n            SDL_SetHint(SDL_HINT_ANGLE_BACKEND, "d3d11");\n#endif/' ui/sdl2.c && \
-    sed -i 's/SDL_SetHint(SDL_HINT_ANGLE_FAST_PATH, "1");/#ifdef SDL_HINT_ANGLE_FAST_PATH\n            SDL_SetHint(SDL_HINT_ANGLE_FAST_PATH, "1");\n#endif/' ui/sdl2.c && \
     if [ "${ENABLE_QEMU_EXP}" = "1" ]; then \
         (cd /src && bash scripts/apply_qemu_patches.sh --src-dir /qemu --primary-patch "/src/${PRIMARY_PATCH}" --with-qemu-exp); \
     else \

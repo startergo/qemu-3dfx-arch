@@ -1,0 +1,26 @@
+Some SDL builds do not provide SDL_HINT_ANGLE_BACKEND and
+SDL_HINT_ANGLE_FAST_PATH. Guard their use so QEMU still builds against
+those headers while keeping the ANGLE hint behavior when the macros are
+available.
+
+---
+ ui/sdl2.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/ui/sdl2.c b/ui/sdl2.c
+index 9cc4c54..af8b03b 100644
+--- a/ui/sdl2.c
++++ b/ui/sdl2.c
+@@
+             SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
++#ifdef SDL_HINT_ANGLE_BACKEND
+             SDL_SetHint(SDL_HINT_ANGLE_BACKEND, "d3d11");
++#endif
++#ifdef SDL_HINT_ANGLE_FAST_PATH
+             SDL_SetHint(SDL_HINT_ANGLE_FAST_PATH, "1");
++#endif
+             /* select GLES version by hand.
+              * should be chosen depending on what the driver supports */
+             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+-- 
+2.47.0.windows.1

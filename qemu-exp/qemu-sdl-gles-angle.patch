@@ -1,12 +1,41 @@
 diff --git a/ui/sdl2.c b/ui/sdl2.c
-index aaaede5..06f215c 100644
+index aaaede5..e191032 100644
 --- a/ui/sdl2.c
 +++ b/ui/sdl2.c
-@@ -110,15 +110,44 @@ void sdl2_window_create(struct sdl2_console *scon)
+@@ -103,6 +103,17 @@ void sdl2_window_create(struct sdl2_console *scon)
+     }
+ #endif
+ 
++    if (scon->opengl && scon->opts->gl == DISPLAY_GL_MODE_ES) {
++        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
++                            SDL_GL_CONTEXT_PROFILE_ES);
++#ifdef __MINGW32__
++        SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
++        SDL_SetHint("SDL_ANGLE_BACKEND", "d3d11");
++        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
++        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
++#endif
++    }
++
+     scon->real_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED,
+                                          SDL_WINDOWPOS_UNDEFINED,
+                                          surface_width(scon->surface),
+@@ -110,8 +121,25 @@ void sdl2_window_create(struct sdl2_console *scon)
                                           flags);
      if (scon->opengl) {
          const char *driver = "opengl";
 +        bool is_es = scon->opts->gl == DISPLAY_GL_MODE_ES;
++
++        if (!scon->real_window && is_es) {
++            SDL_ClearError();
++            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
++            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
++            scon->real_window = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED,
++                                                 SDL_WINDOWPOS_UNDEFINED,
++                                                 surface_width(scon->surface),
++                                                 surface_height(scon->surface),
++                                                 flags);
++        }
  
 -        if (scon->opts->gl == DISPLAY_GL_MODE_ES) {
 +        if (!scon->real_window) {
@@ -16,17 +45,9 @@ index aaaede5..06f215c 100644
 +
 +        if (is_es) {
              driver = "opengles2";
-+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
-+                                SDL_GL_CONTEXT_PROFILE_ES);
-+#ifdef __MINGW32__
-+            SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "1");
-+            SDL_SetHint("SDL_ANGLE_BACKEND", "d3d11");
-+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-+#endif
          }
  
-         SDL_SetHint(SDL_HINT_RENDER_DRIVER, driver);
+@@ -119,6 +147,21 @@ void sdl2_window_create(struct sdl2_console *scon)
          SDL_SetHint(SDL_HINT_RENDER_BATCHING, "1");
  
          scon->winctx = SDL_GL_CreateContext(scon->real_window);

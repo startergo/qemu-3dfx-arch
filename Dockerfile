@@ -130,6 +130,7 @@ RUN git clone --depth=1 https://gitlab.freedesktop.org/virgl/virglrenderer.git /
     cd /virglrenderer && \
     patch -p2 < /virgl-helper/patches/0001-Virglrenderer-on-Windows-and-macOS.patch && \
     patch -p1 < /src/virgil3d/MINGW-packages/0002-virglrenderer-angle-gles-fixes.patch && \
+    patch -p1 < /src/virgil3d/MINGW-packages/0003-virglrenderer-angle-caps-gating.patch && \
     angle_include=/usr/x86_64-w64-mingw32/sys-root/mingw/include && \
     combined_pc_path=/usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig && \
     mingw64-meson build/ \

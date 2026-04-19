@@ -1,0 +1,21 @@
+diff --git a/src/vrend/vrend_renderer.c b/src/vrend/vrend_renderer.c
+--- a/src/vrend/vrend_renderer.c
++++ b/src/vrend/vrend_renderer.c
+@@ -12191,5 +12191,17 @@ static void vrend_fill_caps_glsl_version(int gl_ver, int gles_ver,
+          }
+       }
+    }
++
++   if (gl_ver >= 46 && gles_ver == 0 && getenv("VIRGL_EXPERIMENTAL_GLSL460")) {
++      if (caps->v1.glsl_level < 460) {
++         /*
++          * Experimental only: this opt-in override helps test guest drivers
++          * that gate behavior on GLSL level. Keep disabled by default.
++          */
++         caps->v1.glsl_level = 460;
++         virgl_info("experimental override: forcing GLSL feature level 460\n");
++      }
++   }
++
+    virgl_info("GLSL feature level %d\n", caps->v1.glsl_level);
+ }

@@ -149,7 +149,7 @@ jobs:
         CXXFLAGS="${CXXFLAGS//-flto=auto/}"
         LDFLAGS="${LDFLAGS//-flto=auto/}"
         sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../${{ env.qemu_src_dir }}/meson.build
-        ../${{ env.qemu_src_dir }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --disable-werror --disable-stack-protector --disable-rust --enable-whpx --enable-virglrenderer --enable-opengl --enable-gtk --enable-debug --enable-sdl --enable-sdl-image --enable-slirp --enable-spice --prefix=$(pwd)/../install_dir --extra-cflags="-O2" --extra-ldflags="-Wl,--disable-runtime-pseudo-reloc -Wl,--disable-high-entropy-va"
+        ../${{ env.qemu_src_dir }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --disable-werror --disable-stack-protector --disable-rust --enable-whpx --enable-virglrenderer --enable-opengl --enable-gtk --enable-debug --enable-sdl --enable-sdl-image --enable-slirp --enable-spice --prefix=$(pwd)/../install_dir --extra-cflags="-O2" --extra-ldflags="-Wl,--disable-high-entropy-va"
 
      - name: Compile build
        working-directory: ./build
@@ -344,7 +344,7 @@ jobs:
         CXXFLAGS="${CXXFLAGS//-flto=auto/}"
         LDFLAGS="${LDFLAGS//-flto=auto/}"
         sed -i 's/-Wl,--high-entropy-va/-Wl,--disable-high-entropy-va/g' ../${{ env.qemu_src_dir }}/meson.build
-        ../${{ env.qemu_src_dir }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --disable-werror --disable-stack-protector --disable-rust --enable-whpx --enable-virglrenderer --enable-opengl --enable-gtk --enable-debug --enable-sdl --enable-sdl-image --enable-slirp --enable-spice --prefix=$(pwd)/../install_dir --extra-cflags="-O2" --extra-ldflags="-Wl,--disable-runtime-pseudo-reloc -Wl,--disable-high-entropy-va"
+        ../${{ env.qemu_src_dir }}/configure --target-list="x86_64-softmmu,i386-softmmu" --disable-guest-agent-msi --disable-guest-agent --disable-werror --disable-stack-protector --disable-rust --enable-whpx --enable-virglrenderer --enable-opengl --enable-gtk --enable-debug --enable-sdl --enable-sdl-image --enable-slirp --enable-spice --prefix=$(pwd)/../install_dir --extra-cflags="-O2" --extra-ldflags="-Wl,--disable-high-entropy-va"
 
     - name: Compile build
       working-directory: ./build

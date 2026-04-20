@@ -122,7 +122,7 @@ index 3a9607a..fc83822 100644
 -   if (strcmp(a, "ARM") == 0)
 -      return true;
 -   return false;
-+   return a && !(strcmp(a, "ARM") && strcmp(a, "Google Inc. (Apple)"));
++   return a && !(strcmp(a, "ARM") && strcmp(a, "Google Inc. (Apple)") && strcmp(a, "Google Inc. (Intel)"));
  }
  
  static bool vrend_use_gbm_layout_feature(UNUSED uint32_t flags)

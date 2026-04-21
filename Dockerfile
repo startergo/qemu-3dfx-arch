@@ -134,7 +134,6 @@ RUN git clone --depth=1 https://gitlab.freedesktop.org/virgl/virglrenderer.git /
     patch -p1 < /src/virgil3d/MINGW-packages/0004-virglrenderer-gles-copy-image-fallback.patch && \
     patch -p1 < /src/virgil3d/MINGW-packages/0005-virglrenderer-global-log-level-filter.patch && \
     patch -p1 < /src/virgil3d/MINGW-packages/0006-virglrenderer-experimental-gl46-caps.patch && \
-    patch -p1 < /src/virgil3d/MINGW-packages/0011-virglrenderer-draw-state-diagnostics.patch && \
     angle_include=/usr/x86_64-w64-mingw32/sys-root/mingw/include && \
     combined_pc_path=/usr/x86_64-w64-mingw32/sys-root/mingw/lib/pkgconfig && \
     mingw64-meson build/ \

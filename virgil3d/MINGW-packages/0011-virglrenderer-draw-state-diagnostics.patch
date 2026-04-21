@@ -1,6 +1,6 @@
 --- a/src/vrend/vrend_renderer.c
 +++ b/src/vrend/vrend_renderer.c
-@@ -1466,6 +1466,75 @@
+@@ -1466,6 +1466,187 @@
     }
  }
  
@@ -188,7 +188,7 @@
  static void vrend_depth_test_enable(struct vrend_sub_context *sub_ctx, bool depth_test_enable)
  {
     if (sub_ctx->depth_test_enabled != depth_test_enable) {
-@@ -6108,6 +6177,8 @@
+@@ -6108,6 +6289,8 @@
        glEnable(GL_BLEND);
     }
  

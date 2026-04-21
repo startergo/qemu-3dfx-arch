@@ -1,0 +1,107 @@
+diff --git a/src/vrend/vrend_formats.c b/src/vrend/vrend_formats.c
+--- a/src/vrend/vrend_formats.c
++++ b/src/vrend/vrend_formats.c
+@@ -22,6 +22,8 @@
+  *
+  **************************************************************************/
+ #include <epoxy/gl.h>
++#include <stdio.h>
++#include <stdlib.h>
+ 
+ #include "vrend_renderer.h"
+ #include "util/u_memory.h"
+@@ -429,6 +431,7 @@
+ 
+   const bool is_desktop_gl = epoxy_is_desktop_gl();
+   const int gles_ver = is_desktop_gl ? 0 : epoxy_gl_version();
++   const bool trace_ui = getenv("VIRGL_TRACE_UI") != NULL;
+ 
+   for (i = 0; i < num_entries; i++) {
+     GLenum status;
+@@ -518,6 +521,26 @@
+        vrend_insert_format_swizzle(table[i].format, &table[i], binding, table[i].swizzle, flags);
+     else
+        vrend_insert_format(&table[i], binding, flags);
++
++    if (trace_ui &&
++        (table[i].format == VIRGL_FORMAT_A8_UNORM ||
++         table[i].format == VIRGL_FORMAT_L8_UNORM ||
++         table[i].format == VIRGL_FORMAT_L8A8_UNORM)) {
++      fprintf(stderr,
++              "virgl-trace-ui: register format=%u api=%s gles_ver=%d internal=0x%x glformat=0x%x gltype=0x%x swizzle=[%u,%u,%u,%u] binding=0x%x flags=0x%x\n",
++              (unsigned)table[i].format,
++              is_desktop_gl ? "gl" : "gles",
++              gles_ver,
++              (unsigned)table[i].internalformat,
++              (unsigned)table[i].glformat,
++              (unsigned)table[i].gltype,
++              (unsigned)table[i].swizzle[0],
++              (unsigned)table[i].swizzle[1],
++              (unsigned)table[i].swizzle[2],
++              (unsigned)table[i].swizzle[3],
++              (unsigned)binding,
++              (unsigned)flags);
++    }
+   }
+ }
+ 
+diff --git a/src/vrend/vrend_renderer.c b/src/vrend/vrend_renderer.c
+--- a/src/vrend/vrend_renderer.c
++++ b/src/vrend/vrend_renderer.c
+@@ -9360,6 +9360,7 @@
+       uint64_t send_size = 0;
+       uint32_t stride = info->stride;
+       uint32_t layer_stride = info->layer_stride;
++      bool trace_ui = getenv("VIRGL_TRACE_UI") != NULL;
+ 
+       vrend_use_program(NULL);
+ 
+@@ -9487,6 +9488,32 @@
+          x = info->box->x;
+          y = invert ? (int)res->base.height0 - info->box->y - info->box->height : info->box->y;
+ 
++           bool trace_upload_format =
++              trace_ui &&
++              (res->base.format == VIRGL_FORMAT_A8_UNORM ||
++               res->base.format == VIRGL_FORMAT_L8_UNORM ||
++               res->base.format == VIRGL_FORMAT_L8A8_UNORM);
++
++           if (trace_upload_format) {
++              while (glGetError() != GL_NO_ERROR)
++                 ;
++              fprintf(stderr,
++                      "virgl-trace-ui: upload begin format=%u target=0x%x level=%u box=[%d,%d,%d %d,%d,%d] glformat=0x%x gltype=0x%x compressed=%d gles=%d\n",
++                      (unsigned)res->base.format,
++                      (unsigned)res->target,
++                      info->level,
++                      info->box->x,
++                      info->box->y,
++                      info->box->z,
++                      info->box->width,
++                      info->box->height,
++                      info->box->depth,
++                      (unsigned)glformat,
++                      (unsigned)gltype,
++                      compressed ? 1 : 0,
++                      vrend_state.use_gles ? 1 : 0);
++           }
++
+          /* GLES doesn't allow format conversions, which we need for BGRA resources with RGBA
+           * internal format. So we fallback to performing a CPU swizzle before uploading. */
+          if (vrend_state.use_gles) {
+@@ -9592,6 +9619,15 @@
+                                glformat, gltype, data);
+             }
+          }
++
++           if (trace_upload_format) {
++              GLenum upload_err = glGetError();
++              fprintf(stderr,
++                      "virgl-trace-ui: upload end format=%u gl_error=0x%x\n",
++                      (unsigned)res->base.format,
++                      (unsigned)upload_err);
++           }
++
+          if (res->base.format == VIRGL_FORMAT_Z24X8_UNORM) {
+             if (!vrend_state.use_core_profile)
+                glPixelTransferf(GL_DEPTH_SCALE, 1.0);

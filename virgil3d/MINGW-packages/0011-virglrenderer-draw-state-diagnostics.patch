@@ -1,85 +1,6 @@
 --- a/src/vrend/vrend_renderer.c
 +++ b/src/vrend/vrend_renderer.c
-@@ -1463,12 +1463,158 @@
-       glUseProgram(0);
-       glBindProgramPipeline(id);
-    } else {
-+
-+static bool vrend_trace_ui_draw_enabled(void)
-+{
-+   return getenv("VIRGL_TRACE_UI_DRAW") != NULL;
-+}
-+
-+static bool vrend_trace_ui_draw_should_log(void)
-+{
-+   static unsigned draw_log_count;
-+   draw_log_count++;
-+
-+   /* Keep first events for startup context, then sample periodically. */
-+   return draw_log_count <= 128 || (draw_log_count % 200) == 0;
-+}
-+
-+static void vrend_trace_ui_draw_state(struct vrend_sub_context *sub_ctx,
-+                                      const struct pipe_draw_info *info)
-+{
-+   GLint current_program = 0, draw_fbo = 0;
-+   GLint viewport[4] = {0, 0, 0, 0};
-+   GLint scissor_box[4] = {0, 0, 0, 0};
-+   GLint tex2d_binding = 0;
-+   GLint active_tex = GL_TEXTURE0;
-+   GLint tex2d_ifmt = -1;
-+   GLuint selected_program = 0;
-+   bool uses_pipeline = false;
-+
-+   if (!vrend_trace_ui_draw_enabled() || !vrend_trace_ui_draw_should_log())
-+      return;
-+
-+   if (sub_ctx->prog) {
-+      uses_pipeline = sub_ctx->prog->is_pipeline;
-+      selected_program = uses_pipeline ? sub_ctx->prog->id.pipeline : sub_ctx->prog->id.program;
-+   }
-+
-+   glGetIntegerv(GL_CURRENT_PROGRAM, &current_program);
-+   glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &draw_fbo);
-+   glGetIntegerv(GL_VIEWPORT, viewport);
-+   glGetIntegerv(GL_SCISSOR_BOX, scissor_box);
-+
-+   glGetIntegerv(GL_ACTIVE_TEXTURE, &active_tex);
-+   glActiveTexture(GL_TEXTURE0);
-+   glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex2d_binding);
-+   if (tex2d_binding) {
-+      glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &tex2d_ifmt);
-+      if (glGetError() != GL_NO_ERROR)
-+         tex2d_ifmt = -1;
-+   }
-+   glActiveTexture(active_tex);
-+
-+   fprintf(stderr,
-+           "virgl-trace-ui-draw: mode=%u indexed=%u count=%u start=%u inst=%u start_inst=%u min=%u max=%u prog=%u pipeline=%u cur_prog=%d draw_fbo=%d sub_fbo=%u tex2d=%d ifmt=0x%x blend=%u depth=%u scissor=%u vp=%d,%d,%d,%d sc=%d,%d,%d,%d\\n",
-+           info->mode,
-+           info->indexed ? 1u : 0u,
-+           info->count,
-+           info->start,
-+           info->instance_count,
-+           info->start_instance,
-+           info->min_index,
-+           info->max_index,
-+           selected_program,
-+           uses_pipeline ? 1u : 0u,
-+           current_program,
-+           draw_fbo,
-+           sub_ctx->fb_id,
-+           tex2d_binding,
-+           tex2d_ifmt,
-+           glIsEnabled(GL_BLEND) ? 1u : 0u,
-+           glIsEnabled(GL_DEPTH_TEST) ? 1u : 0u,
-+           glIsEnabled(GL_SCISSOR_TEST) ? 1u : 0u,
-+           viewport[0], viewport[1], viewport[2], viewport[3],
-+           scissor_box[0], scissor_box[1], scissor_box[2], scissor_box[3]);
-+}
-        if (has_feature(feat_separate_shader_objects))
-           glBindProgramPipeline(0);
-        glUseProgram(id);
+@@ -1466,6 +1466,79 @@
     }
  }
  
@@ -133,7 +54,7 @@
 +   glActiveTexture(active_tex);
 +
 +   fprintf(stderr,
-+           "virgl-trace-ui-draw: mode=%u indexed=%u count=%u start=%u inst=%u start_inst=%u min=%u max=%u prog=%u pipeline=%u cur_prog=%d draw_fbo=%d sub_fbo=%u tex2d=%d ifmt=0x%x blend=%u depth=%u scissor=%u vp=%d,%d,%d,%d sc=%d,%d,%d,%d\\n",
++           "virgl-trace-ui-draw: mode=%u indexed=%u count=%u start=%u inst=%u start_inst=%u min=%u max=%u prog=%u pipeline=%u cur_prog=%d draw_fbo=%d sub_fbo=%u tex2d=%d ifmt=0x%x blend=%u depth=%u scissor=%u vp=%d,%d,%d,%d sc=%d,%d,%d,%d\n",
 +           info->mode,
 +           info->indexed ? 1u : 0u,
 +           info->count,
@@ -159,7 +80,7 @@
  static void vrend_depth_test_enable(struct vrend_sub_context *sub_ctx, bool depth_test_enable)
  {
     if (sub_ctx->depth_test_enabled != depth_test_enable) {
-@@ -6114,6 +6260,8 @@
+@@ -6108,6 +6181,8 @@
        glEnable(GL_BLEND);
     }
  
@@ -168,12 +89,3 @@
     /* set the vertex state up now on a delay */
     if (!info->indexed) {
        GLenum mode = info->mode;
-@@ -6205,6 +6353,8 @@
-    return 0;
- }
- 
-+
-+   vrend_trace_ui_draw_state(sub_ctx, info);
- void vrend_launch_grid(struct vrend_context *ctx,
-                        UNUSED uint32_t *block,
-                        uint32_t *grid,

@@ -20,7 +20,17 @@
     glGetProgramiv(id, GL_LINK_STATUS, &lret);
     if (lret == GL_FALSE) {
        char infolog[65536];
-@@ -9555,6 +9561,11 @@
+@@ -9551,19 +9557,42 @@
+          if (res->target == GL_TEXTURE_CUBE_MAP) {
+             GLenum ctarget = GL_TEXTURE_CUBE_MAP_POSITIVE_X + info->box->z;
+             if (compressed) {
++               if (getenv("VIRGL_TRACE_UI")) {
++                  fprintf(stderr, "virgl-trace-ui: tex upload compressed target=0x%x level=%u x=%d y=%d z=%d w=%u h=%u d=%u format=0x%x comp_size=%d\n",
++                          ctarget, info->level, x, y, info->box->z,
++                          info->box->width, info->box->height, info->box->depth,
++                          glformat, comp_size);
++               }
+                glCompressedTexSubImage2D(ctarget, info->level, x, y,
                                           info->box->width, info->box->height,
                                           glformat, comp_size, data);
              } else {
@@ -32,3 +42,116 @@
                 glTexSubImage2D(ctarget, info->level, x, y, info->box->width, info->box->height,
                                 glformat, gltype, data);
              }
+          } else if (res->target == GL_TEXTURE_3D || res->target == GL_TEXTURE_2D_ARRAY || res->target == GL_TEXTURE_CUBE_MAP_ARRAY) {
+             if (compressed) {
++               if (getenv("VIRGL_TRACE_UI")) {
++                  fprintf(stderr, "virgl-trace-ui: tex upload compressed target=0x%x level=%u x=%d y=%d z=%d w=%u h=%u d=%u format=0x%x comp_size=%d\n",
++                          res->target, info->level, x, y, info->box->z,
++                          info->box->width, info->box->height, info->box->depth,
++                          glformat, comp_size);
++               }
+                glCompressedTexSubImage3D(res->target, info->level, x, y, info->box->z,
+                                          info->box->width, info->box->height, info->box->depth,
+                                          glformat, comp_size, data);
+             } else {
++               if (getenv("VIRGL_TRACE_UI")) {
++                  fprintf(stderr, "virgl-trace-ui: tex upload target=0x%x level=%u x=%d y=%d z=%d w=%u h=%u d=%u glformat=0x%x gltype=0x%x\n",
++                          res->target, info->level, x, y, info->box->z,
++                          info->box->width, info->box->height, info->box->depth,
++                          glformat, gltype);
++               }
+                glTexSubImage3D(res->target, info->level, x, y, info->box->z,
+                                info->box->width, info->box->height, info->box->depth,
+                                glformat, gltype, data);
+@@ -9573,19 +9602,43 @@
+                /* Covers both compressed and none compressed. */
+                report_gles_missing_func(ctx, "gl[Compressed]TexSubImage1D");
+             } else if (compressed) {
++               if (getenv("VIRGL_TRACE_UI")) {
++                  fprintf(stderr, "virgl-trace-ui: tex upload compressed target=0x%x level=%u x=%d w=%u format=0x%x comp_size=%d\n",
++                          res->target, info->level, info->box->x,
++                          info->box->width, glformat, comp_size);
++               }
+                glCompressedTexSubImage1D(res->target, info->level, info->box->x,
+                                          info->box->width,
+                                          glformat, comp_size, data);
+             } else {
++               if (getenv("VIRGL_TRACE_UI")) {
++                  fprintf(stderr, "virgl-trace-ui: tex upload target=0x%x level=%u x=%d w=%u glformat=0x%x gltype=0x%x\n",
++                          res->target, info->level, info->box->x,
++                          info->box->width, glformat, gltype);
++               }
+                glTexSubImage1D(res->target, info->level, info->box->x, info->box->width,
+                                glformat, gltype, data);
+             }
+          } else {
+             if (compressed) {
++               if (getenv("VIRGL_TRACE_UI")) {
++                  fprintf(stderr, "virgl-trace-ui: tex upload compressed target=0x%x level=%u x=%d y=%d w=%u h=%u format=0x%x comp_size=%d\n",
++                          res->target, info->level, x,
++                          res->target == GL_TEXTURE_1D_ARRAY ? info->box->z : y,
++                          info->box->width, info->box->height, glformat, comp_size);
++               }
+                glCompressedTexSubImage2D(res->target, info->level, x, res->target == GL_TEXTURE_1D_ARRAY ? info->box->z : y,
+                                          info->box->width, info->box->height,
+                                          glformat, comp_size, data);
+             } else {
++               if (getenv("VIRGL_TRACE_UI")) {
++                  fprintf(stderr, "virgl-trace-ui: tex upload target=0x%x level=%u x=%d y=%d w=%u h=%u glformat=0x%x gltype=0x%x\n",
++                          res->target, info->level, x,
++                          res->target == GL_TEXTURE_1D_ARRAY ? info->box->z : y,
++                          info->box->width,
++                          res->target == GL_TEXTURE_1D_ARRAY ? info->box->depth : info->box->height,
++                          glformat, gltype);
++               }
+                glTexSubImage2D(res->target, info->level, x, res->target == GL_TEXTURE_1D_ARRAY ? info->box->z : y,
+                                info->box->width,
+                                res->target == GL_TEXTURE_1D_ARRAY ? info->box->depth : info->box->height,
+@@ -10596,22 +10649,47 @@
+                           (GLenum)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i) : dst_res->target;
+       if (compressed) {
+          if (ctarget == GL_TEXTURE_1D) {
++            if (getenv("VIRGL_TRACE_UI")) {
++               fprintf(stderr, "virgl-trace-ui: transfer upload compressed target=0x%x level=%u x=%u w=%u format=0x%x size=%u\n",
++                       ctarget, dst_level, dstx, src_box->width, glformat, slice_size);
++            }
+             glCompressedTexSubImage1D(ctarget, dst_level, dstx,
+                                       src_box->width,
+                                       glformat, slice_size, tptr + slice_offset);
+          } else {
++            if (getenv("VIRGL_TRACE_UI")) {
++               fprintf(stderr, "virgl-trace-ui: transfer upload compressed target=0x%x level=%u x=%u y=%u w=%u h=%u format=0x%x size=%u\n",
++                       ctarget, dst_level, dstx, dsty,
++                       src_box->width, src_box->height, glformat, slice_size);
++            }
+             glCompressedTexSubImage2D(ctarget, dst_level, dstx, dsty,
+                                       src_box->width, src_box->height,
+                                       glformat, slice_size, tptr + slice_offset);
+          }
+       } else {
+          if (ctarget == GL_TEXTURE_1D) {
++            if (getenv("VIRGL_TRACE_UI")) {
++               fprintf(stderr, "virgl-trace-ui: transfer upload target=0x%x level=%u x=%u w=%u glformat=0x%x gltype=0x%x\n",
++                       ctarget, dst_level, dstx, src_box->width, glformat, gltype);
++            }
+             glTexSubImage1D(ctarget, dst_level, dstx, src_box->width, glformat, gltype, tptr + slice_offset);
+          } else if (ctarget == GL_TEXTURE_3D ||
+                     ctarget == GL_TEXTURE_2D_ARRAY ||
+                     ctarget == GL_TEXTURE_CUBE_MAP_ARRAY) {
++            if (getenv("VIRGL_TRACE_UI")) {
++               fprintf(stderr, "virgl-trace-ui: transfer upload target=0x%x level=%u x=%u y=%u z=%u w=%u h=%u d=%u glformat=0x%x gltype=0x%x\n",
++                       ctarget, dst_level, dstx, dsty, dstz,
++                       src_box->width, src_box->height, src_box->depth,
++                       glformat, gltype);
++            }
+             glTexSubImage3D(ctarget, dst_level, dstx, dsty, dstz, src_box->width, src_box->height, src_box->depth, glformat, gltype, tptr + slice_offset);
+          } else {
++            if (getenv("VIRGL_TRACE_UI")) {
++               fprintf(stderr, "virgl-trace-ui: transfer upload target=0x%x level=%u x=%u y=%u w=%u h=%u glformat=0x%x gltype=0x%x\n",
++                       ctarget, dst_level, dstx, dsty,
++                       src_box->width, src_box->height,
++                       glformat, gltype);
++            }
+             glTexSubImage2D(ctarget, dst_level, dstx, dsty, src_box->width, src_box->height, glformat, gltype, tptr + slice_offset);
+          }
+       }

@@ -1,0 +1,31 @@
+--- a/src/vrend/vrend_renderer.c
++++ b/src/vrend/vrend_renderer.c
+@@ -1398,6 +1398,9 @@ vrend_compile_shader(struct vrend_context *ctx, struct vrend_sub_context *sub_c
+ 
+    glCompileShader(shader->id);
++   if (getenv("VIRGL_TRACE_UI")) {
++      fprintf(stderr, "virgl-trace-ui: shader compile shader_id=%u type=%u\n", shader->id, conv_shader_type(shader->sel->type));
++   }
+    glGetShaderiv(shader->id, GL_COMPILE_STATUS, &param);
+    if (param == GL_FALSE) {
+       char infolog[65536];
+@@ -1879,6 +1882,9 @@ static bool vrend_link(GLuint id)
+ {
+    GLint lret;
+    glLinkProgram(id);
++   if (getenv("VIRGL_TRACE_UI")) {
++      fprintf(stderr, "virgl-trace-ui: shader link prog_id=%u\n", id);
++   }
+    glGetProgramiv(id, GL_LINK_STATUS, &lret);
+    if (lret == GL_FALSE) {
+       char infolog[65536];
+@@ -9520,6 +9526,12 @@ vrend_transfer_send_request(struct vrend_context *ctx,
+             } else {
++               if (getenv("VIRGL_TRACE_UI")) {
++                  uint8_t *sample = (uint8_t *)data;
++                  fprintf(stderr, "virgl-trace-ui: tex upload format=0x%x glformat=0x%x gltype=0x%x w=%u h=%u first_pixel=[%02x,%02x,%02x,%02x]\n",
++                     glformat, glformat, gltype, info->box->width, info->box->height, sample[0], sample[1], sample[2], sample[3]);
++               }
+                glTexSubImage2D(ctarget, info->level, x, y, info->box->width, info->box->height,
+                                glformat, gltype, data);
+             }

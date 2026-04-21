@@ -9,13 +9,102 @@
 +   return getenv("VIRGL_TRACE_UI_DRAW") != NULL;
 +}
 +
-+static bool vrend_trace_ui_draw_should_log(void)
++static bool vrend_trace_ui_box_eq(const GLint *a, const GLint *b)
 +{
-+   static unsigned draw_log_count;
-+   draw_log_count++;
++   return a[0] == b[0] && a[1] == b[1] && a[2] == b[2] && a[3] == b[3];
++}
 +
-+   /* Keep first events for startup context, then sample periodically. */
-+   return draw_log_count <= 128 || (draw_log_count % 200) == 0;
++static bool vrend_trace_ui_draw_should_log(GLuint selected_program,
++                                           GLint draw_fbo,
++                                           GLint tex2d_binding,
++                                           bool blend_enabled,
++                                           bool depth_enabled,
++                                           bool scissor_enabled,
++                                           const GLint *viewport,
++                                           const GLint *scissor_box,
++                                           unsigned *seq,
++                                           const char **reason,
++                                           bool *anomaly)
++{
++   static unsigned draw_seq;
++   static bool have_prev;
++   static bool anomaly_reported;
++   static GLuint prev_program;
++   static GLint prev_draw_fbo;
++   static GLint prev_tex2d_binding;
++   static bool prev_blend_enabled;
++   static bool prev_depth_enabled;
++   static bool prev_scissor_enabled;
++   static GLint prev_viewport[4];
++   static GLint prev_scissor_box[4];
++
++   bool should_log = false;
++   const char *why = "sample";
++   bool saw_anomaly = false;
++
++   draw_seq++;
++
++   if (!have_prev) {
++      should_log = true;
++      why = "init";
++   } else if (prev_program != selected_program) {
++      should_log = true;
++      why = "program";
++   } else if (prev_draw_fbo != draw_fbo) {
++      should_log = true;
++      why = "fbo";
++   } else if (prev_tex2d_binding != tex2d_binding) {
++      should_log = true;
++      why = "texture";
++   } else if (prev_blend_enabled != blend_enabled) {
++      should_log = true;
++      why = "blend";
++   } else if (prev_depth_enabled != depth_enabled) {
++      should_log = true;
++      why = "depth";
++   } else if (prev_scissor_enabled != scissor_enabled) {
++      should_log = true;
++      why = "scissor-enable";
++   } else if (!vrend_trace_ui_box_eq(prev_viewport, viewport)) {
++      should_log = true;
++      why = "viewport";
++   } else if (!vrend_trace_ui_box_eq(prev_scissor_box, scissor_box)) {
++      should_log = true;
++      why = "scissor-box";
++   }
++
++   /* Keep periodic samples even when state is stable. */
++   if (!should_log && (draw_seq <= 128 || (draw_seq % 200) == 0))
++      should_log = true;
++
++   if (!anomaly_reported && scissor_enabled && viewport[2] > 0 && viewport[3] > 0 &&
++       (scissor_box[2] < viewport[2] || scissor_box[3] < viewport[3])) {
++      anomaly_reported = true;
++      saw_anomaly = true;
++      should_log = true;
++      why = "scissor-anomaly";
++   }
++
++   prev_program = selected_program;
++   prev_draw_fbo = draw_fbo;
++   prev_tex2d_binding = tex2d_binding;
++   prev_blend_enabled = blend_enabled;
++   prev_depth_enabled = depth_enabled;
++   prev_scissor_enabled = scissor_enabled;
++   prev_viewport[0] = viewport[0];
++   prev_viewport[1] = viewport[1];
++   prev_viewport[2] = viewport[2];
++   prev_viewport[3] = viewport[3];
++   prev_scissor_box[0] = scissor_box[0];
++   prev_scissor_box[1] = scissor_box[1];
++   prev_scissor_box[2] = scissor_box[2];
++   prev_scissor_box[3] = scissor_box[3];
++   have_prev = true;
++
++   *seq = draw_seq;
++   *reason = why;
++   *anomaly = saw_anomaly;
++   return should_log;
 +}
 +
 +static void vrend_trace_ui_draw_state(struct vrend_sub_context *sub_ctx,
@@ -26,11 +115,16 @@
 +   GLint scissor_box[4] = {0, 0, 0, 0};
 +   GLint tex2d_binding = 0;
 +   GLint active_tex = GL_TEXTURE0;
-+   GLint tex2d_ifmt = -1;
 +   GLuint selected_program = 0;
 +   bool uses_pipeline = false;
++   bool blend_enabled;
++   bool depth_enabled;
++   bool scissor_enabled;
++   unsigned seq;
++   const char *reason;
++   bool anomaly;
 +
-+   if (!vrend_trace_ui_draw_enabled() || !vrend_trace_ui_draw_should_log())
++   if (!vrend_trace_ui_draw_enabled())
 +      return;
 +
 +   if (sub_ctx->prog) {
@@ -46,11 +140,30 @@
 +   glGetIntegerv(GL_ACTIVE_TEXTURE, &active_tex);
 +   glActiveTexture(GL_TEXTURE0);
 +   glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex2d_binding);
-+   /* Avoid glGetTexLevelParameteriv on GLES contexts without ES 3.1 support. */
 +   glActiveTexture(active_tex);
 +
++   blend_enabled = glIsEnabled(GL_BLEND);
++   depth_enabled = glIsEnabled(GL_DEPTH_TEST);
++   scissor_enabled = glIsEnabled(GL_SCISSOR_TEST);
++
++   if (!vrend_trace_ui_draw_should_log(selected_program,
++                                       draw_fbo,
++                                       tex2d_binding,
++                                       blend_enabled,
++                                       depth_enabled,
++                                       scissor_enabled,
++                                       viewport,
++                                       scissor_box,
++                                       &seq,
++                                       &reason,
++                                       &anomaly))
++      return;
++
 +   fprintf(stderr,
-+           "virgl-trace-ui-draw: mode=%u indexed=%u count=%u start=%u inst=%u start_inst=%u min=%u max=%u prog=%u pipeline=%u cur_prog=%d draw_fbo=%d sub_fbo=%u tex2d=%d ifmt=0x%x blend=%u depth=%u scissor=%u vp=%d,%d,%d,%d sc=%d,%d,%d,%d\n",
++           "virgl-trace-ui-draw: seq=%u reason=%s anomaly=%u mode=%u indexed=%u count=%u start=%u inst=%u start_inst=%u min=%u max=%u prog=%u pipeline=%u cur_prog=%d draw_fbo=%d sub_fbo=%u tex2d=%d blend=%u depth=%u scissor=%u vp=%d,%d,%d,%d sc=%d,%d,%d,%d\n",
++           seq,
++           reason,
++           anomaly ? 1u : 0u,
 +           info->mode,
 +           info->indexed ? 1u : 0u,
 +           info->count,
@@ -65,10 +178,9 @@
 +           draw_fbo,
 +           sub_ctx->fb_id,
 +           tex2d_binding,
-+           tex2d_ifmt,
-+           glIsEnabled(GL_BLEND) ? 1u : 0u,
-+           glIsEnabled(GL_DEPTH_TEST) ? 1u : 0u,
-+           glIsEnabled(GL_SCISSOR_TEST) ? 1u : 0u,
++           blend_enabled ? 1u : 0u,
++           depth_enabled ? 1u : 0u,
++           scissor_enabled ? 1u : 0u,
 +           viewport[0], viewport[1], viewport[2], viewport[3],
 +           scissor_box[0], scissor_box[1], scissor_box[2], scissor_box[3]);
 +}

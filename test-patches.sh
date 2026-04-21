@@ -11,5 +11,4 @@ echo "0003:"; patch -p1 --dry-run -i $B/0003-virglrenderer-angle-caps-gating.pat
 echo "0004:"; patch -p1 --dry-run -i $B/0004-virglrenderer-gles-copy-image-fallback.patch 2>&1 | tail -1
 echo "0005:"; patch -p1 --dry-run -i $B/0005-virglrenderer-global-log-level-filter.patch 2>&1 | tail -1
 echo "0006:"; patch -p1 --dry-run -i $B/0006-virglrenderer-experimental-gl46-caps.patch 2>&1 | tail -1
-echo "0010:"; patch -p1 --dry-run -i $B/0010-virglrenderer-shader-texture-diagnostics.patch 2>&1 | tail -1
 echo "ALL_DONE"

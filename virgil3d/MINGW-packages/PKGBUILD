@@ -23,17 +23,15 @@ source=("virglrenderer-$pkgver.tar.bz2::https://gitlab.freedesktop.org/virgl/vir
   "0003-virglrenderer-angle-caps-gating.patch"
   "0004-virglrenderer-gles-copy-image-fallback.patch"
   "0005-virglrenderer-global-log-level-filter.patch"
-  "0006-virglrenderer-experimental-gl46-caps.patch"
-  "0010-virglrenderer-shader-texture-diagnostics.patch")
+  "0006-virglrenderer-experimental-gl46-caps.patch")
 noextract=("virglrenderer-$pkgver.tar.bz2")
 sha256sums=('088040d130eaa0458a978fe7867fbfb1fcf1fdff52bf3b27a00658828bc4189f'
-      '51e8163e5f5e900cbb9003b355dfbc909efb8e2b642ec97bc380baa1fa20d076'
-      '25d5c615e4f919a8f159340b99935ee2d90bca9ab3453a442f7f0f44a0f3554f'
-      '254476888812c9e09e7c01d93d9f17f85059c64c44691008c4bfe8c7f904cb3e'
-      'a9896e4103f0d787d89815f3c883fe8e27dea0ca1bbaecddf6792b52e0a3b067'
-      'bd4692fc6b217a56f63013c2d6bf2dccd45e43cee20c9d29af49a2a0594f46eb'
-  '70b08783abd000f750a0bfb6c81cb580647369985b8ac1ce63715d8e0b582944'
-  'a851e1f9da9cb2ba0bfc763416da13504b3acc7f446f2354d93dfe7b5e6bc154')
+            '51e8163e5f5e900cbb9003b355dfbc909efb8e2b642ec97bc380baa1fa20d076'
+            '25d5c615e4f919a8f159340b99935ee2d90bca9ab3453a442f7f0f44a0f3554f'
+            '254476888812c9e09e7c01d93d9f17f85059c64c44691008c4bfe8c7f904cb3e'
+            'a9896e4103f0d787d89815f3c883fe8e27dea0ca1bbaecddf6792b52e0a3b067'
+            'bd4692fc6b217a56f63013c2d6bf2dccd45e43cee20c9d29af49a2a0594f46eb'
+            '70b08783abd000f750a0bfb6c81cb580647369985b8ac1ce63715d8e0b582944')
 
 prepare() {
   echo "Extracting virglrenderer-$pkgver.tar.bz2..."
@@ -50,7 +48,6 @@ prepare() {
   patch -p1 -i ${srcdir}/0004-virglrenderer-gles-copy-image-fallback.patch
   patch -p1 -i ${srcdir}/0005-virglrenderer-global-log-level-filter.patch
   patch -p1 -i ${srcdir}/0006-virglrenderer-experimental-gl46-caps.patch
-  patch -p1 -i ${srcdir}/0010-virglrenderer-shader-texture-diagnostics.patch
 }
 
 build() {

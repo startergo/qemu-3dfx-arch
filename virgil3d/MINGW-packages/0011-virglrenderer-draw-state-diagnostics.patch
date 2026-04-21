@@ -46,11 +46,7 @@
 +   glGetIntegerv(GL_ACTIVE_TEXTURE, &active_tex);
 +   glActiveTexture(GL_TEXTURE0);
 +   glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex2d_binding);
-+   if (tex2d_binding) {
-+      glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &tex2d_ifmt);
-+      if (glGetError() != GL_NO_ERROR)
-+         tex2d_ifmt = -1;
-+   }
++   /* Avoid glGetTexLevelParameteriv on GLES contexts without ES 3.1 support. */
 +   glActiveTexture(active_tex);
 +
 +   fprintf(stderr,

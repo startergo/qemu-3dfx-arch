@@ -6,6 +6,7 @@ watcom/
 bin/src/
 bin/pkg/
 build/
+.github\agents/
 wrappers/3dfx/build*
 wrappers/mesa/build*
 *.iso

@@ -2,6 +2,12 @@ name: Build Docker Cross branch
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish release asset
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - test-experiments
@@ -34,7 +40,7 @@ jobs:
         path: ./output
 
   Release:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true'
     needs:
       - docker-cross-windows
     runs-on: ubuntu-latest

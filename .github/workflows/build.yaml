@@ -4,9 +4,15 @@
 name: Build Stable branch
 
 on:
-  - push
-  - pull_request
-  - workflow_dispatch
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish release assets
+        required: false
+        default: false
+        type: boolean
   
 jobs:
    MINGW64-Windows:
@@ -504,7 +510,7 @@ jobs:
 
    Release:
 
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true'
     needs:
       - MINGW64-Windows
       - UCRT64-Windows

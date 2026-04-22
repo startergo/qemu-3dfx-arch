@@ -32,3 +32,35 @@ jobs:
       with:
         name: bin-windows-docker-head-artifact
         path: ./output
+
+  Release:
+    if: github.event_name == 'workflow_dispatch'
+    needs:
+      - docker-cross-windows
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+
+    - name: Pack release asset
+      run: |
+        set -euxo pipefail
+        cd artifacts
+        zip -qry ../bin-windows-docker-head-artifact.zip bin-windows-docker-head-artifact
+
+    - name: Publish rolling release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: nightly-docker-head
+        name: Nightly docker head
+        prerelease: true
+        make_latest: false
+        generate_release_notes: false
+        files: |
+          bin-windows-docker-head-artifact.zip

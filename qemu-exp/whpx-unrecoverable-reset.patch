@@ -27,3 +27,16 @@ index e56ae2b..e98c833 100644
              whpx_get_registers(cpu, WHPX_LEVEL_FULL_STATE);
              bql_lock();
              qemu_system_guest_panicked(cpu_get_crash_info(cpu));
+@@ -1121,10 +1121,10 @@ static int emulate_instruction(CPUState *cpu, const uint8_t *insn_bytes, size_t
+    struct x86_decode decode = { 0 };
+    x86_insn_stream stream = { .bytes = insn_bytes, .len = insn_len };
+
+-    whpx_get_registers(cpu, WHPX_LEVEL_FAST_RUNTIME_STATE);
++    whpx_get_registers(cpu, WHPX_LEVEL_RUNTIME_STATE);
+    decode_instruction_stream(env, &decode, &stream);
+    exec_instruction(env, &decode);
+-    whpx_set_registers(cpu, WHPX_LEVEL_FAST_RUNTIME_STATE);
++    whpx_set_registers(cpu, WHPX_LEVEL_RUNTIME_STATE);
+
+    return 0;
+}

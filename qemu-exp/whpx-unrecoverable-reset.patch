@@ -1,27 +1,33 @@
 diff --git a/target/i386/whpx/whpx-all.c b/target/i386/whpx/whpx-all.c
-index e56ae2b..e98c833 100644
+index e56ae2b..5ba4ce8 100644
 --- a/target/i386/whpx/whpx-all.c
 +++ b/target/i386/whpx/whpx-all.c
-@@ -1121,10 +1121,10 @@ static int emulate_instruction(CPUState *cpu, const uint8_t *insn_bytes, size_t
+@@ -842,14 +842,21 @@
+ static int emulate_instruction(CPUState *cpu, const uint8_t *insn_bytes, size_t insn_len)
+ {
+     X86CPU *x86_cpu = X86_CPU(cpu);
+     CPUX86State *env = &x86_cpu->env;
++    AccelCPUState *vcpu = cpu->accel;
      struct x86_decode decode = { 0 };
      x86_insn_stream stream = { .bytes = insn_bytes, .len = insn_len };
-
+ 
 -    whpx_get_registers(cpu, WHPX_LEVEL_FAST_RUNTIME_STATE);
 +    whpx_get_registers(cpu, WHPX_LEVEL_RUNTIME_STATE);
++    env->segs[R_CS] = whpx_seg_h2q(&vcpu->exit_ctx.VpContext.Cs);
++    if (vcpu->exit_ctx.ExitReason == WHvRunVpExitReasonX64IoPortAccess) {
++        env->segs[R_DS] = whpx_seg_h2q(&vcpu->exit_ctx.IoPortAccess.Ds);
++        env->segs[R_ES] = whpx_seg_h2q(&vcpu->exit_ctx.IoPortAccess.Es);
++    }
++    x86_update_hflags(env);
      decode_instruction_stream(env, &decode, &stream);
      exec_instruction(env, &decode);
 -    whpx_set_registers(cpu, WHPX_LEVEL_FAST_RUNTIME_STATE);
 +    whpx_set_registers(cpu, WHPX_LEVEL_RUNTIME_STATE);
-
+ 
      return 0;
  }
-@@ -1960,18 +1960,23 @@ int whpx_vcpu_run(CPUState *cpu)
-                 cpu->exception_index = EXCP_INTERRUPT;
-             } else {
-                 /* Another exception or debug event. Report it to GDB. */
-                 cpu->exception_index = EXCP_DEBUG;
-             }
-
+@@ -1965,8 +1972,34 @@
+ 
              ret = 1;
              break;
 -        case WHvRunVpExitReasonNone:
@@ -29,16 +35,30 @@ index e56ae2b..e98c833 100644
 +            whpx_get_registers(cpu, WHPX_LEVEL_FULL_STATE);
 +            error_report("WHPX: unrecoverable guest exception at rip=0x%" PRIx64,
 +                         (uint64_t)cpu_env(cpu)->eip);
++            error_report("WHPX: exit=0x%x vp_rip=0x%" PRIx64 " vp_rflags=0x%" PRIx64
++                         " cs=0x%x cs_base=0x%" PRIx64,
++                         vcpu->exit_ctx.ExitReason,
++                         vcpu->exit_ctx.VpContext.Rip,
++                         vcpu->exit_ctx.VpContext.Rflags,
++                         vcpu->exit_ctx.VpContext.Cs.Selector,
++                         vcpu->exit_ctx.VpContext.Cs.Base);
++            error_report("WHPX: exec_state cpl=%u pe=%u lma=%u dbg=%u intr_pending=%u intr_shadow=%u",
++                         vcpu->exit_ctx.VpContext.ExecutionState.Cpl,
++                         vcpu->exit_ctx.VpContext.ExecutionState.Cr0Pe,
++                         vcpu->exit_ctx.VpContext.ExecutionState.EferLma,
++                         vcpu->exit_ctx.VpContext.ExecutionState.DebugActive,
++                         vcpu->exit_ctx.VpContext.ExecutionState.InterruptionPending,
++                         vcpu->exit_ctx.VpContext.ExecutionState.InterruptShadow);
++            error_report("WHPX: qemu eip=0x%x eflags=0x%x cr0=0x%lx cr2=0x%lx cr3=0x%lx cr4=0x%lx",
++                         cpu_env(cpu)->eip,
++                         cpu_env(cpu)->eflags,
++                         cpu_env(cpu)->cr[0],
++                         cpu_env(cpu)->cr[2],
++                         cpu_env(cpu)->cr[3],
++                         cpu_env(cpu)->cr[4]);
 +            ret = -1;
 +            break;
 +        case WHvRunVpExitReasonNone:
          case WHvRunVpExitReasonInvalidVpRegisterValue:
          case WHvRunVpExitReasonUnsupportedFeature:
          default:
-             error_report("WHPX: Unexpected VP exit code %d",
-                          vcpu->exit_ctx.ExitReason);
-             whpx_get_registers(cpu, WHPX_LEVEL_FULL_STATE);
-             bql_lock();
-             qemu_system_guest_panicked(cpu_get_crash_info(cpu));
-             bql_unlock();
-             break;

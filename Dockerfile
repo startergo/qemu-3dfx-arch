@@ -5,7 +5,7 @@ FROM fedora:latest
 ARG OUTPUT_DIR=/output
 ARG BUILD_JOBS=4
 ARG QEMU_REPO=https://github.com/qemu/qemu.git
-ARG QEMU_REF=master
+ARG QEMU_REF=v11.0.0
 ARG VIRGL_HELPER_REPO=https://github.com/startergo/qemu-virgl-winhost.git
 ARG VIRGL_HELPER_REF=master
 ARG PRIMARY_PATCH=00-qemu110x-mesa-glide.patch

@@ -22,7 +22,7 @@ jobs:
     - name: Build Docker image
       run: |
         docker build \
-          --build-arg QEMU_REF=master \
+          --build-arg QEMU_REF=v11.0.0 \
           --build-arg VIRGL_HELPER_REF=master \
           --build-arg PRIMARY_PATCH=00-qemu110x-mesa-glide.patch \
           --build-arg ENABLE_QEMU_EXP=1 \
@@ -36,7 +36,7 @@ jobs:
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
       with:
-        name: bin-windows-docker-head-artifact
+        name: bin-windows-docker-qemu-11.0.0-artifact
         path: ./output
 
   Release:
@@ -58,15 +58,15 @@ jobs:
       run: |
         set -euxo pipefail
         cd artifacts
-        zip -qry ../bin-windows-docker-head-artifact.zip bin-windows-docker-head-artifact
+        zip -qry ../bin-windows-docker-qemu-11.0.0-artifact.zip bin-windows-docker-qemu-11.0.0-artifact
 
     - name: Publish rolling release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
-        tag_name: nightly-docker-head
-        name: Nightly docker head
+        tag_name: nightly-docker-qemu-11.0.0
+        name: Nightly docker QEMU 11.0.0
         prerelease: true
         make_latest: false
         generate_release_notes: false
         files: |
-          bin-windows-docker-head-artifact.zip
+          bin-windows-docker-qemu-11.0.0-artifact.zip

@@ -19,9 +19,9 @@ jobs:
    
      runs-on: windows-latest      
      env:
-      buildver: 'head-da6c4fe'
-      qemu_ref: 'da6c4fe60fee30dd77267764d55b38af9cb89d4b'
-      qemu_src_dir: 'qemu-head'
+      buildver: 'qemu-11.0.0'
+      qemu_ref: 'v11.0.0'
+      qemu_src_dir: 'qemu-11.0.0'
       primary_patch: '00-qemu110x-mesa-glide.patch'
       mspkg: 'mingw-w64-x86_64'
       branch: ${{ github.ref_name }}
@@ -118,11 +118,9 @@ jobs:
        shell: msys2 {0}
        run:  |
         echo "Cloning QEMU source"
-        git clone --depth 1 https://github.com/qemu/qemu.git "${{ env.qemu_src_dir }}"
+        git clone --depth 1 --branch "${{ env.qemu_ref }}" https://github.com/qemu/qemu.git "${{ env.qemu_src_dir }}"
         cd "${{ env.qemu_src_dir }}"
-        git fetch --depth 1 origin "${{ env.qemu_ref }}"
-        git checkout "${{ env.qemu_ref }}"
-        echo "Pinned QEMU commit: $(git rev-parse --short HEAD)"
+        echo "Fetched QEMU tag: $(git describe --tags)"
 
      - name: Patching build
        shell: msys2 {0}
@@ -217,9 +215,9 @@ jobs:
 
     runs-on: windows-latest
     env:
-      buildver: 'head-da6c4fe'
-      qemu_ref: 'da6c4fe60fee30dd77267764d55b38af9cb89d4b'
-      qemu_src_dir: 'qemu-head'
+      buildver: 'qemu-11.0.0'
+      qemu_ref: 'v11.0.0'
+      qemu_src_dir: 'qemu-11.0.0'
       primary_patch: '00-qemu110x-mesa-glide.patch'
       mspkg: 'mingw-w64-ucrt-x86_64'
       branch: ${{ github.ref_name }}
@@ -316,11 +314,9 @@ jobs:
       shell: msys2 {0}
       run:  |
         echo "Cloning QEMU source"
-        git clone --depth 1 https://github.com/qemu/qemu.git "${{ env.qemu_src_dir }}"
+        git clone --depth 1 --branch "${{ env.qemu_ref }}" https://github.com/qemu/qemu.git "${{ env.qemu_src_dir }}"
         cd "${{ env.qemu_src_dir }}"
-        git fetch --depth 1 origin "${{ env.qemu_ref }}"
-        git checkout "${{ env.qemu_ref }}"
-        echo "Pinned QEMU commit: $(git rev-parse --short HEAD)"
+        echo "Fetched QEMU tag: $(git describe --tags)"
 
     - name: Patching build
       shell: msys2 {0}
@@ -537,7 +533,7 @@ jobs:
         zip -qry ../wrappers-artifact.zip wrappers-artifact
 
     - name: Publish rolling release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       with:
         tag_name: nightly-${{ env.buildver }}
         name: Nightly ${{ env.buildver }}

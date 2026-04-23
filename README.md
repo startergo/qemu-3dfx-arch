@@ -23,7 +23,7 @@ This repository includes patches from upstream and my patches that work on lates
 
 ### My patches
 
-     00-qemu110x-mesa-glide.patch - Patch for QEMU version 10.1.x (MESA & Glide)
+     00-qemu110x-mesa-glide.patch - Patch for QEMU version 11.0.x (MESA & Glide)
      01-qemu100x-mesa-glide.patch - Patch for QEMU version 10.0.x (MESA & Glide)
      02-qemu92x-mesa-glide.kht.patch - Patch for QEMU version 9.2.x (MESA & Glide) (deprecated)
 
@@ -116,18 +116,18 @@ Simple guide to apply the patch:
     mkdir ~/myqemu && cd ~/myqemu
     git clone https://github.com/kharovtobi/qemu-3dfx-arch.git
     cd qemu-3dfx-arch
-    wget https://download.qemu.org/qemu-10.1.0.tar.xz
-    tar xf qemu-10.1.0.tar.xz
-    cd qemu-10.1.0
+    wget https://download.qemu.org/qemu-11.0.0.tar.xz
+    tar xf qemu-11.0.0.tar.xz
+    cd qemu-11.0.0
     rsync -r ../qemu-0/hw/3dfx ../qemu-1/hw/mesa ./hw/
     patch -p0 -i ../00-qemu110x-mesa-glide.patch
     bash ../scripts/sign_commit
     mkdir ../build && cd ../build
-    ../qemu-10.1.0/configure --target-list=i386-softmmu --prefix=$(pwd)/../install_dir
+    ../qemu-11.0.0/configure --target-list=i386-softmmu --prefix=$(pwd)/../install_dir
     make install
 
 - This guide makes and installs binaries to install_dir
-- You can also patch any versions in 10.1.x
+- You can also patch any versions in 11.0.x
 - All patch hunks must be successful in order for the binary to run properly, or you may have BSOD when running Windows 98 for the first time and not work as intended.
 
 ### VirGL with SDL2 OpenGL Support

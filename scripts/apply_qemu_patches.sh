@@ -137,7 +137,10 @@ if [[ $with_qemu_exp -eq 1 ]]; then
     # clipboard patch may need offsets due to primary patch modifying same files
     if ! git apply "$repo_root/qemu-exp/qemu-sdl-clipboard.patch" 2>/dev/null; then
         echo "Clipboard patch failed with git apply, trying with patch utility"
-        patch -p1 -i "$repo_root/qemu-exp/qemu-sdl-clipboard.patch" || true
+        if ! patch -p1 -i "$repo_root/qemu-exp/qemu-sdl-clipboard.patch"; then
+            echo "SDL clipboard patch failed to apply" >&2
+            exit 1
+        fi
     fi
     git apply "$repo_root/qemu-exp/whpx-unrecoverable-reset.patch"
     git apply "$repo_root/qemu-exp/qemu-sdl-gles-angle.patch"
@@ -149,6 +152,6 @@ patch -p0 -i "$repo_root/virgil3d/0001-Virgil3D-with-SDL2-OpenGL.patch"
 patch -p0 -i "$repo_root/virgil3d/0002-Virgil3D-macOS-GLSL-version.patch"
 
 echo "Signing commit id to source tree"
-bash "$repo_root/scripts/sign_commit"
+bash "$repo_root/scripts/sign_commit" -git="$repo_root"
 
 popd >/dev/null

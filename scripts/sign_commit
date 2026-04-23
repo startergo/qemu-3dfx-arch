@@ -29,6 +29,9 @@ SRC=" \
     $VLC \
 " \
 
-echo $REV
+printf "/${REV}/signing ..."
 sed -i -e "s/\(rev_\[\).*\].*/\1\]\ =\ \"$REV\"/" $SRC
-grep "rev_\[" $SRC | sed "s/\(rev_\[\).*\].*/\1\]\ =\ \"$REV\"/"
+[ $(grep "rev_\[" $SRC | grep $REV | wc -l) -ne 3 ] && \
+    printf "Fail\n\e[01;91mERROR: signing failed\e[00;0m\n" && exit 1
+echo "Done" && \
+    grep "rev_\[" $SRC | grep $REV

@@ -516,7 +516,7 @@ jobs:
       actions: read
       contents: write
     env:
-      buildver: 'head-da6c4fe'
+      buildver: 'qemu-11.0.0'
 
     steps:
     - name: Download build artifacts

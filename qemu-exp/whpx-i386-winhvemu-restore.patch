@@ -136,10 +136,11 @@ index e56ae2b..fc930d7 100644
  #include "system/whpx-all.h"
  #include "system/whpx-common.h"
  
++#include "emulate/x86_flags.h"
 +#ifdef TARGET_X86_64
  #include "emulate/x86_decode.h"
  #include "emulate/x86_emu.h"
- #include "emulate/x86_flags.h"
+-#include "emulate/x86_flags.h"
  #include "emulate/x86_mmu.h"
 +#endif
  #include "trace.h"

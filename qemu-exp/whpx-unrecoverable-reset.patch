@@ -2,7 +2,7 @@ diff --git a/target/i386/whpx/whpx-all.c b/target/i386/whpx/whpx-all.c
 index e56ae2b..5ba4ce8 100644
 --- a/target/i386/whpx/whpx-all.c
 +++ b/target/i386/whpx/whpx-all.c
-@@ -2080,8 +2080,34 @@
+@@ -2080,8 +2080,36 @@
  
              ret = 1;
              break;
@@ -25,7 +25,9 @@ index e56ae2b..5ba4ce8 100644
 +                         vcpu->exit_ctx.VpContext.ExecutionState.DebugActive,
 +                         vcpu->exit_ctx.VpContext.ExecutionState.InterruptionPending,
 +                         vcpu->exit_ctx.VpContext.ExecutionState.InterruptShadow);
-+            error_report("WHPX: qemu eip=0x%x eflags=0x%x cr0=0x%lx cr2=0x%lx cr3=0x%lx cr4=0x%lx",
++            error_report("WHPX: qemu eip=0x" TARGET_FMT_lx " eflags=0x" TARGET_FMT_lx
++                         " cr0=0x" TARGET_FMT_lx " cr2=0x" TARGET_FMT_lx
++                         " cr3=0x" TARGET_FMT_lx " cr4=0x" TARGET_FMT_lx,
 +                         cpu_env(cpu)->eip,
 +                         cpu_env(cpu)->eflags,
 +                         cpu_env(cpu)->cr[0],

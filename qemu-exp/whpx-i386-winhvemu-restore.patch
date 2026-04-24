@@ -1,0 +1,382 @@
+diff --git a/accel/whpx/whpx-common.c b/accel/whpx/whpx-common.c
+index a899cd5..536cc4a 100644
+--- a/accel/whpx/whpx-common.c
++++ b/accel/whpx/whpx-common.c
+@@ -40,6 +40,9 @@ bool whpx_allowed;
+ bool whpx_irqchip_in_kernel;
+ static bool whp_dispatch_initialized;
+ static HMODULE hWinHvPlatform;
++#ifdef HOST_X86_64
++static HMODULE hWinHvEmulation;
++#endif
+ 
+ struct whpx_state whpx_global;
+ struct WHPDispatch whp_dispatch;
+@@ -425,6 +428,7 @@ static bool load_whp_dispatch_fns(HMODULE *handle,
+     HMODULE hLib = *handle;
+ 
+     #define WINHV_PLATFORM_DLL "WinHvPlatform.dll"
++#define WINHV_EMULATION_DLL "WinHvEmulation.dll"
+     #define WHP_LOAD_FIELD_OPTIONAL(return_type, function_name, signature) \
+         whp_dispatch.function_name = \
+             (function_name ## _t)GetProcAddress(hLib, #function_name); \
+@@ -451,6 +455,12 @@ static bool load_whp_dispatch_fns(HMODULE *handle,
+         WHP_LOAD_LIB(WINHV_PLATFORM_DLL, hLib)
+         LIST_WINHVPLATFORM_FUNCTIONS(WHP_LOAD_FIELD)
+         break;
++#ifdef HOST_X86_64
++    case WINHV_EMULATION_FNS_DEFAULT:
++        WHP_LOAD_LIB(WINHV_EMULATION_DLL, hLib)
++        LIST_WINHVEMULATION_FUNCTIONS(WHP_LOAD_FIELD)
++        break;
++#endif
+     case WINHV_PLATFORM_FNS_SUPPLEMENTAL:
+         WHP_LOAD_LIB(WINHV_PLATFORM_DLL, hLib)
+         LIST_WINHVPLATFORM_FUNCTIONS_SUPPLEMENTAL(WHP_LOAD_FIELD_OPTIONAL)
+@@ -609,6 +619,11 @@ bool init_whp_dispatch(void)
+     if (!load_whp_dispatch_fns(&hWinHvPlatform, WINHV_PLATFORM_FNS_DEFAULT)) {
+         goto error;
+     }
++#ifdef HOST_X86_64
++    if (!load_whp_dispatch_fns(&hWinHvEmulation, WINHV_EMULATION_FNS_DEFAULT)) {
++        goto error;
++    }
++#endif
+     assert(load_whp_dispatch_fns(&hWinHvPlatform,
+         WINHV_PLATFORM_FNS_SUPPLEMENTAL));
+     whp_dispatch_initialized = true;
+@@ -618,6 +633,11 @@ error:
+     if (hWinHvPlatform) {
+         FreeLibrary(hWinHvPlatform);
+     }
++#ifdef HOST_X86_64
++    if (hWinHvEmulation) {
++        FreeLibrary(hWinHvEmulation);
++    }
++#endif
+     return false;
+ }
+ 
+diff --git a/include/system/whpx-common.h b/include/system/whpx-common.h
+index 04289af..a4e16e1 100644
+--- a/include/system/whpx-common.h
++++ b/include/system/whpx-common.h
+@@ -3,6 +3,9 @@
+ #define SYSTEM_WHPX_COMMON_H
+ 
+ struct AccelCPUState {
++#ifdef HOST_X86_64
++    WHV_EMULATOR_HANDLE emulator;
++#endif
+     bool window_registered;
+     bool interruptable;
+     bool ready_for_pic_interrupt;
+diff --git a/include/system/whpx-internal.h b/include/system/whpx-internal.h
+index 8482901..829bc09 100644
+--- a/include/system/whpx-internal.h
++++ b/include/system/whpx-internal.h
+@@ -4,6 +4,9 @@
+ 
+ #include <windows.h>
+ #include <winhvplatform.h>
++#ifdef HOST_X86_64
++#include <winhvemulation.h>
++#endif
+ #include "hw/i386/apic.h"
+ #include "exec/vaddr.h"
+ 
+@@ -90,6 +93,15 @@ void whpx_apic_get(APICCommonState *s);
+   X(HRESULT, WHvResetPartition, \
+         (WHV_PARTITION_HANDLE Partition)) \
+ 
++#ifdef HOST_X86_64
++#define LIST_WINHVEMULATION_FUNCTIONS(X) \
++  X(HRESULT, WHvEmulatorCreateEmulator, (const WHV_EMULATOR_CALLBACKS* Callbacks, WHV_EMULATOR_HANDLE* Emulator)) \
++  X(HRESULT, WHvEmulatorDestroyEmulator, (WHV_EMULATOR_HANDLE Emulator)) \
++  X(HRESULT, WHvEmulatorTryIoEmulation, (WHV_EMULATOR_HANDLE Emulator, VOID* Context, const WHV_VP_EXIT_CONTEXT* VpContext, const WHV_X64_IO_PORT_ACCESS_CONTEXT* IoInstructionContext, WHV_EMULATOR_STATUS* EmulatorReturnStatus)) \
++  X(HRESULT, WHvEmulatorTryMmioEmulation, (WHV_EMULATOR_HANDLE Emulator, VOID* Context, const WHV_VP_EXIT_CONTEXT* VpContext, const WHV_MEMORY_ACCESS_CONTEXT* MmioInstructionContext, WHV_EMULATOR_STATUS* EmulatorReturnStatus)) \
++
++#endif
++
+ #define WHP_DEFINE_TYPE(return_type, function_name, signature) \
+     typedef return_type (WINAPI *function_name ## _t) signature;
+ 
+@@ -98,10 +110,16 @@ void whpx_apic_get(APICCommonState *s);
+ 
+ /* Define function typedef */
+ LIST_WINHVPLATFORM_FUNCTIONS(WHP_DEFINE_TYPE)
++#ifdef HOST_X86_64
++LIST_WINHVEMULATION_FUNCTIONS(WHP_DEFINE_TYPE)
++#endif
+ LIST_WINHVPLATFORM_FUNCTIONS_SUPPLEMENTAL(WHP_DEFINE_TYPE)
+ 
+ struct WHPDispatch {
+     LIST_WINHVPLATFORM_FUNCTIONS(WHP_DECLARE_MEMBER)
++#ifdef HOST_X86_64
++    LIST_WINHVEMULATION_FUNCTIONS(WHP_DECLARE_MEMBER)
++#endif
+     LIST_WINHVPLATFORM_FUNCTIONS_SUPPLEMENTAL(WHP_DECLARE_MEMBER)
+ };
+ 
+@@ -111,6 +129,9 @@ bool init_whp_dispatch(void);
+ 
+ typedef enum WHPFunctionList {
+     WINHV_PLATFORM_FNS_DEFAULT,
++#ifdef HOST_X86_64
++    WINHV_EMULATION_FNS_DEFAULT,
++#endif
+     WINHV_PLATFORM_FNS_SUPPLEMENTAL
+ } WHPFunctionList;
+ 
+diff --git a/target/i386/whpx/whpx-all.c b/target/i386/whpx/whpx-all.c
+index e56ae2b..fc930d7 100644
+--- a/target/i386/whpx/whpx-all.c
++++ b/target/i386/whpx/whpx-all.c
+@@ -37,10 +37,12 @@
+ #include "system/whpx-all.h"
+ #include "system/whpx-common.h"
+ 
++#ifdef TARGET_X86_64
+ #include "emulate/x86_decode.h"
+ #include "emulate/x86_emu.h"
+ #include "emulate/x86_flags.h"
+ #include "emulate/x86_mmu.h"
++#endif
+ #include "trace.h"
+ 
+ #include <winhvplatform.h>
+@@ -839,17 +841,25 @@ void whpx_get_registers(CPUState *cpu, WHPXStateLevel level)
+     x86_update_hflags(env);
+ }
+ 
++#ifdef TARGET_X86_64
+ static int emulate_instruction(CPUState *cpu, const uint8_t *insn_bytes, size_t insn_len)
+ {
+     X86CPU *x86_cpu = X86_CPU(cpu);
+     CPUX86State *env = &x86_cpu->env;
++    AccelCPUState *vcpu = cpu->accel;
+     struct x86_decode decode = { 0 };
+     x86_insn_stream stream = { .bytes = insn_bytes, .len = insn_len };
+ 
+-    whpx_get_registers(cpu, WHPX_LEVEL_FAST_RUNTIME_STATE);
++    whpx_get_registers(cpu, WHPX_LEVEL_RUNTIME_STATE);
++    env->segs[R_CS] = whpx_seg_h2q(&vcpu->exit_ctx.VpContext.Cs);
++    if (vcpu->exit_ctx.ExitReason == WHvRunVpExitReasonX64IoPortAccess) {
++        env->segs[R_DS] = whpx_seg_h2q(&vcpu->exit_ctx.IoPortAccess.Ds);
++        env->segs[R_ES] = whpx_seg_h2q(&vcpu->exit_ctx.IoPortAccess.Es);
++    }
++    x86_update_hflags(env);
+     decode_instruction_stream(env, &decode, &stream);
+     exec_instruction(env, &decode);
+-    whpx_set_registers(cpu, WHPX_LEVEL_FAST_RUNTIME_STATE);
++    whpx_set_registers(cpu, WHPX_LEVEL_RUNTIME_STATE);
+ 
+     return 0;
+ }
+@@ -1062,6 +1072,153 @@ static void whpx_init_emu(void)
+     init_emu(&whpx_x86_emul_ops);
+ }
+ 
++#else /* !TARGET_X86_64 - use WinHvEmulation for i386 guests */
++
++static HRESULT CALLBACK whpx_emu_ioport_callback(
++    void *ctx,
++    WHV_EMULATOR_IO_ACCESS_INFO *IoAccess)
++{
++    MemTxAttrs attrs = { 0 };
++    address_space_rw(&address_space_io, IoAccess->Port, attrs,
++                     &IoAccess->Data, IoAccess->AccessSize,
++                     IoAccess->Direction);
++    return S_OK;
++}
++
++static HRESULT CALLBACK whpx_emu_mmio_callback(
++    void *ctx,
++    WHV_EMULATOR_MEMORY_ACCESS_INFO *ma)
++{
++    CPUState *cs = (CPUState *)ctx;
++    AddressSpace *as = cpu_addressspace(cs, MEMTXATTRS_UNSPECIFIED);
++
++    address_space_rw(as, ma->GpaAddress, MEMTXATTRS_UNSPECIFIED,
++                     ma->Data, ma->AccessSize, ma->Direction);
++    return S_OK;
++}
++
++static HRESULT CALLBACK whpx_emu_getreg_callback(
++    void *ctx,
++    const WHV_REGISTER_NAME *RegisterNames,
++    UINT32 RegisterCount,
++    WHV_REGISTER_VALUE *RegisterValues)
++{
++    HRESULT hr;
++    struct whpx_state *whpx = &whpx_global;
++    CPUState *cpu = (CPUState *)ctx;
++
++    hr = whp_dispatch.WHvGetVirtualProcessorRegisters(
++        whpx->partition, cpu->cpu_index,
++        RegisterNames, RegisterCount,
++        RegisterValues);
++    if (FAILED(hr)) {
++        error_report("WHPX: Failed to get virtual processor registers,"
++                     " hr=%08lx", hr);
++    }
++    return hr;
++}
++
++static HRESULT CALLBACK whpx_emu_setreg_callback(
++    void *ctx,
++    const WHV_REGISTER_NAME *RegisterNames,
++    UINT32 RegisterCount,
++    const WHV_REGISTER_VALUE *RegisterValues)
++{
++    HRESULT hr;
++    struct whpx_state *whpx = &whpx_global;
++    CPUState *cpu = (CPUState *)ctx;
++
++    hr = whp_dispatch.WHvSetVirtualProcessorRegisters(
++        whpx->partition, cpu->cpu_index,
++        RegisterNames, RegisterCount,
++        RegisterValues);
++    if (FAILED(hr)) {
++        error_report("WHPX: Failed to set virtual processor registers,"
++                     " hr=%08lx", hr);
++    }
++    /* Clear dirty so we avoid a double-write on VP resume. */
++    cpu->vcpu_dirty = false;
++    return hr;
++}
++
++static HRESULT CALLBACK whpx_emu_translate_callback(
++    void *ctx,
++    WHV_GUEST_VIRTUAL_ADDRESS Gva,
++    WHV_TRANSLATE_GVA_FLAGS TranslateFlags,
++    WHV_TRANSLATE_GVA_RESULT_CODE *TranslationResult,
++    WHV_GUEST_PHYSICAL_ADDRESS *Gpa)
++{
++    HRESULT hr;
++    struct whpx_state *whpx = &whpx_global;
++    CPUState *cpu = (CPUState *)ctx;
++    WHV_TRANSLATE_GVA_RESULT res;
++
++    hr = whp_dispatch.WHvTranslateGva(whpx->partition, cpu->cpu_index,
++                                      Gva, TranslateFlags, &res, Gpa);
++    if (FAILED(hr)) {
++        error_report("WHPX: Failed to translate GVA, hr=%08lx", hr);
++    } else {
++        *TranslationResult = res.ResultCode;
++    }
++    return hr;
++}
++
++static const WHV_EMULATOR_CALLBACKS whpx_emu_callbacks = {
++    .Size = sizeof(WHV_EMULATOR_CALLBACKS),
++    .WHvEmulatorIoPortCallback = whpx_emu_ioport_callback,
++    .WHvEmulatorMemoryCallback = whpx_emu_mmio_callback,
++    .WHvEmulatorGetVirtualProcessorRegisters = whpx_emu_getreg_callback,
++    .WHvEmulatorSetVirtualProcessorRegisters = whpx_emu_setreg_callback,
++    .WHvEmulatorTranslateGvaPage = whpx_emu_translate_callback,
++};
++
++static int whpx_handle_mmio(CPUState *cpu, WHV_RUN_VP_EXIT_CONTEXT *exit_ctx)
++{
++    HRESULT hr;
++    AccelCPUState *vcpu = cpu->accel;
++    WHV_EMULATOR_STATUS emu_status;
++
++    hr = whp_dispatch.WHvEmulatorTryMmioEmulation(
++        vcpu->emulator, cpu,
++        &exit_ctx->VpContext, &exit_ctx->MemoryAccess,
++        &emu_status);
++    if (FAILED(hr)) {
++        error_report("WHPX: Failed to parse MMIO access, hr=%08lx", hr);
++        return -1;
++    }
++    if (!emu_status.EmulationSuccessful) {
++        error_report("WHPX: Failed to emulate MMIO access with"
++                     " EmulatorReturnStatus: %u", emu_status.AsUINT32);
++        return -1;
++    }
++    return 0;
++}
++
++static int whpx_handle_portio(CPUState *cpu,
++                               WHV_RUN_VP_EXIT_CONTEXT *exit_ctx)
++{
++    HRESULT hr;
++    AccelCPUState *vcpu = cpu->accel;
++    WHV_EMULATOR_STATUS emu_status;
++
++    hr = whp_dispatch.WHvEmulatorTryIoEmulation(
++        vcpu->emulator, cpu,
++        &exit_ctx->VpContext, &exit_ctx->IoPortAccess,
++        &emu_status);
++    if (FAILED(hr)) {
++        error_report("WHPX: Failed to parse PortIO access, hr=%08lx", hr);
++        return -1;
++    }
++    if (!emu_status.EmulationSuccessful) {
++        error_report("WHPX: Failed to emulate PortIO access with"
++                     " EmulatorReturnStatus: %u", emu_status.AsUINT32);
++        return -1;
++    }
++    return 0;
++}
++
++#endif /* TARGET_X86_64 */
++
+ /*
+  * Controls whether we should intercept various exceptions on the guest,
+  * namely breakpoint/single-step events.
+@@ -1449,9 +1606,14 @@ bool whpx_arch_supports_guest_debug(void)
+ 
+ void whpx_arch_destroy_vcpu(CPUState *cpu)
+ {
++#ifdef TARGET_X86_64
+     X86CPU *x86cpu = X86_CPU(cpu);
+     CPUX86State *env = &x86cpu->env;
+     g_free(env->emu_mmio_buf);
++#else
++    AccelCPUState *vcpu = cpu->accel;
++    whp_dispatch.WHvEmulatorDestroyEmulator(vcpu->emulator);
++#endif
+ }
+ 
+ /* Returns the address of the next instruction that is about to be executed. */
+@@ -2053,6 +2215,17 @@ int whpx_init_vcpu(CPUState *cpu)
+ 
+     vcpu = g_new0(AccelCPUState, 1);
+ 
++#ifndef TARGET_X86_64
++    hr = whp_dispatch.WHvEmulatorCreateEmulator(
++        &whpx_emu_callbacks,
++        &vcpu->emulator);
++    if (FAILED(hr)) {
++        error_report("WHPX: Failed to setup instruction completion support,"
++                     " hr=%08lx", hr);
++        ret = -EINVAL;
++        goto error;
++    }
++#endif
+     hr = whp_dispatch.WHvCreateVirtualProcessor(
+         whpx->partition, cpu->cpu_index, 0);
+     if (FAILED(hr)) {
+@@ -2103,7 +2276,9 @@ int whpx_init_vcpu(CPUState *cpu)
+     max_vcpu_index = max(max_vcpu_index, cpu->cpu_index);
+     qemu_add_vm_change_state_handler(whpx_cpu_update_state, env);
+ 
++#ifdef TARGET_X86_64
+     env->emu_mmio_buf = g_new(char, 4096);
++#endif
+ 
+     return 0;
+ 
+@@ -2387,7 +2562,9 @@ int whpx_accel_init(AccelState *as, MachineState *ms)
+     }
+ 
+     whpx_memory_init();
++#ifdef TARGET_X86_64
+     whpx_init_emu();
++#endif
+ 
+     return 0;
+ 

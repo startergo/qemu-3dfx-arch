@@ -142,6 +142,7 @@ if [[ $with_qemu_exp -eq 1 ]]; then
             exit 1
         fi
     fi
+    git apply "$repo_root/qemu-exp/whpx-i386-winhvemu-restore.patch"
     git apply "$repo_root/qemu-exp/whpx-unrecoverable-reset.patch"
     git apply "$repo_root/qemu-exp/qemu-sdl-gles-angle.patch"
 

@@ -36,9 +36,9 @@ diff --git a/include/ui/sdl2.h b/include/ui/sdl2.h
 diff --git a/meson.build b/meson.build
 --- a/meson.build
 +++ b/meson.build
-@@ -1628,6 +1628,11 @@
-           get_option('sdl').disabled() ? 'disabled' : 'not found'))
+@@ -1629,6 +1629,11 @@
    endif
+   error('Featuring qemu-3dfx required SDL2')
    sdl_image = not_found
 +endif
 +
@@ -48,7 +48,7 @@ diff --git a/meson.build b/meson.build
  endif
 
  rbd = not_found
-@@ -2499,6 +2504,7 @@
+@@ -2500,6 +2505,7 @@
  config_host_data.set('CONFIG_PLUGIN', get_option('plugins'))
  config_host_data.set('CONFIG_RBD', rbd.found())
  config_host_data.set('CONFIG_RDMA', rdma.found())
@@ -84,7 +84,7 @@ diff --git a/ui/meson.build b/ui/meson.build
 diff --git a/ui/sdl2.c b/ui/sdl2.c
 --- a/ui/sdl2.c
 +++ b/ui/sdl2.c
-@@ -625,6 +625,9 @@
+@@ -650,12 +650,18 @@
           * key is released.
           */
          scon->ignore_hotkeys = get_mod_state();
@@ -93,8 +93,17 @@ diff --git a/ui/sdl2.c b/ui/sdl2.c
 +#endif
          break;
      case SDL_WINDOWEVENT_FOCUS_LOST:
-         if (gui_grab && !gui_fullscreen) {
-@@ -709,7 +712,12 @@
+         if (!fxui_focus_lost() && gui_grab && !gui_fullscreen) {
+             fxui_grab_val(0x80 | gui_grab);
+             sdl_grab_end(scon);
+         }
++#ifdef CONFIG_SDL_CLIPBOARD
++        sdl2_clipboard_handle_focus_change(scon, false);
++#endif
+         break;
+     case SDL_WINDOWEVENT_RESTORED:
+         update_displaychangelistener(&scon->dcl, GUI_REFRESH_INTERVAL_DEFAULT);
+@@ -735,7 +741,12 @@
              break;
          case SDL_WINDOWEVENT:
              handle_windowevent(ev);
@@ -107,20 +116,20 @@ diff --git a/ui/sdl2.c b/ui/sdl2.c
          default:
              break;
          }
-@@ -959,6 +967,13 @@
+@@ -1349,6 +1360,13 @@
+         }
  #endif
          register_displaychangelistener(&sdl2_console[i].dcl);
-
++
 +
 +#ifdef CONFIG_SDL_CLIPBOARD
 +        if (i == 0) {
 +            sdl2_clipboard_init(&sdl2_console[i]);
 +        }
 +#endif
-+
+
  #if defined(SDL_VIDEO_DRIVER_WINDOWS) || defined(SDL_VIDEO_DRIVER_X11)
          if (SDL_GetWindowWMInfo(sdl2_console[i].real_window, &info)) {
- #if defined(SDL_VIDEO_DRIVER_WINDOWS)
 diff --git a/ui/sdl2-clipboard.c b/ui/sdl2-clipboard.c
 new file mode 100644
 --- /dev/null
@@ -401,8 +410,8 @@ new file mode 100644
 +    }
 +    /*
 +     * Deduplicate genuine host clipboard changes.  last_host_text is cleared
-+     * on each new guest grab so the same host text can be forwarded again
-+     * after the guest has changed its clipboard.
++     * on each new guest clipboard grab so the same host text can be forwarded
++     * again after the guest has changed its clipboard.
 +     */
 +    if (last_host_text && strcmp(last_host_text, text) == 0) {
 +        DPRINTF("host clipboard unchanged, skip");
